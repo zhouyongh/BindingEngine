@@ -6,12 +6,12 @@
              mc:Ignorable="d" Width="243" Height="290"
             d:DesignWidth="260">
     <Grid>
-        <ListBox HorizontalAlignment="Center" Height="108" VerticalAlignment="Top" Width="204" Margin="0,4,0,0"
+        <ListBox HorizontalAlignment="Center" Height="108" VerticalAlignment="Top" Width="204" Margin="0,4,0,0" FontSize="11.2"
                  ItemsSource="{Binding Persons}" DisplayMemberPath="Name" SelectedItem="{Binding CurrentPerson, Mode=TwoWay}"/>
         <Label Content="Current :" HorizontalAlignment="Left" Margin="20,138,0,0" VerticalAlignment="Top"/>
         <Label Content="Count :" HorizontalAlignment="Left" Margin="20,168,0,0" VerticalAlignment="Top"/>
-        <TextBox HorizontalAlignment="Left" Margin="84,143,0,0" Width="103" TextWrapping="Wrap" Text="{Binding CurrentPerson.Name}" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="112,173,0,0" Width="Auto" TextWrapping="Wrap" Text="{Binding Persons.Count}" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Left" Margin="90,143,0,0" Height="20" Width="103" TextWrapping="Wrap" Text="{Binding CurrentPerson.Name, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="100,173,0,0" Width="Auto" TextWrapping="Wrap" Text="{Binding Persons.Count}" VerticalAlignment="Top"/>
         <Button Content="Add" Command="{Binding AddCommand}" HorizontalAlignment="Left" Margin="4,246,0,0" VerticalAlignment="Top" Width="75" Height="23"/>
         <Button Content="Remove" Command="{Binding RemoveCommand}" HorizontalAlignment="Left" Margin="84,246,0,0" VerticalAlignment="Top" Width="75" Height="23"/>
         <Button Content="Clear" Command="{Binding ClearCommand}" HorizontalAlignment="Left" Margin="164,246,0,0" VerticalAlignment="Top" Width="75" Height="23"/>

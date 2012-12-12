@@ -29,17 +29,25 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.nameTextbox = new System.Windows.Forms.TextBox();
             this.clearBtn = new System.Windows.Forms.Button();
             this.countText = new System.Windows.Forms.Label();
             this.removeBtn = new System.Windows.Forms.Button();
             this.addBtn = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.personListBox = new System.Windows.Forms.ListBox();
+            this.personListBox = new BindingSample.RefreshListBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.wpfHost = new System.Windows.Forms.Integration.ElementHost();
             this.wpfControl1 = new BindingSample.WPFControl();
-            this.nameTextbox = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.viewModelLabel = new System.Windows.Forms.Label();
+            this.setBindingBtn = new System.Windows.Forms.Button();
+            this.clearBindingbtn = new System.Windows.Forms.Button();
+            this.gcCollectbtn = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.bindStatusLabel = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -60,6 +68,13 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "WinFrom";
+            // 
+            // nameTextbox
+            // 
+            this.nameTextbox.Location = new System.Drawing.Point(87, 157);
+            this.nameTextbox.Name = "nameTextbox";
+            this.nameTextbox.Size = new System.Drawing.Size(100, 20);
+            this.nameTextbox.TabIndex = 3;
             // 
             // clearBtn
             // 
@@ -142,18 +157,94 @@
             this.wpfHost.TabIndex = 0;
             this.wpfHost.Child = this.wpfControl1;
             // 
-            // nameTextbox
+            // button1
             // 
-            this.nameTextbox.Location = new System.Drawing.Point(87, 157);
-            this.nameTextbox.Name = "nameTextbox";
-            this.nameTextbox.Size = new System.Drawing.Size(100, 20);
-            this.nameTextbox.TabIndex = 3;
+            this.button1.Location = new System.Drawing.Point(36, 341);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(113, 23);
+            this.button1.TabIndex = 1;
+            this.button1.Text = "Change ViewModel";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.changeViewModel_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(34, 401);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(115, 13);
+            this.label3.TabIndex = 2;
+            this.label3.Text = "ViewModel hashcode :";
+            // 
+            // viewModelLabel
+            // 
+            this.viewModelLabel.AutoSize = true;
+            this.viewModelLabel.Location = new System.Drawing.Point(158, 401);
+            this.viewModelLabel.Name = "viewModelLabel";
+            this.viewModelLabel.Size = new System.Drawing.Size(0, 13);
+            this.viewModelLabel.TabIndex = 3;
+            // 
+            // setBindingBtn
+            // 
+            this.setBindingBtn.Location = new System.Drawing.Point(155, 341);
+            this.setBindingBtn.Name = "setBindingBtn";
+            this.setBindingBtn.Size = new System.Drawing.Size(104, 23);
+            this.setBindingBtn.TabIndex = 4;
+            this.setBindingBtn.Text = "Set Binding";
+            this.setBindingBtn.UseVisualStyleBackColor = true;
+            this.setBindingBtn.Click += new System.EventHandler(this.setBindingBtn_Click);
+            // 
+            // clearBindingbtn
+            // 
+            this.clearBindingbtn.Location = new System.Drawing.Point(265, 341);
+            this.clearBindingbtn.Name = "clearBindingbtn";
+            this.clearBindingbtn.Size = new System.Drawing.Size(102, 23);
+            this.clearBindingbtn.TabIndex = 4;
+            this.clearBindingbtn.Text = "Clear Binding";
+            this.clearBindingbtn.UseVisualStyleBackColor = true;
+            this.clearBindingbtn.Click += new System.EventHandler(this.clearBindingBtn_Click);
+            // 
+            // gcCollectbtn
+            // 
+            this.gcCollectbtn.Location = new System.Drawing.Point(387, 341);
+            this.gcCollectbtn.Name = "gcCollectbtn";
+            this.gcCollectbtn.Size = new System.Drawing.Size(90, 23);
+            this.gcCollectbtn.TabIndex = 5;
+            this.gcCollectbtn.Text = "GC Collect";
+            this.gcCollectbtn.UseVisualStyleBackColor = true;
+            this.gcCollectbtn.Click += new System.EventHandler(this.gcCollectbtn_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(34, 379);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(67, 13);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Bind Status :";
+            // 
+            // bindStatusLabel
+            // 
+            this.bindStatusLabel.AutoSize = true;
+            this.bindStatusLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.bindStatusLabel.Location = new System.Drawing.Point(158, 379);
+            this.bindStatusLabel.Name = "bindStatusLabel";
+            this.bindStatusLabel.Size = new System.Drawing.Size(0, 13);
+            this.bindStatusLabel.TabIndex = 3;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(621, 418);
+            this.ClientSize = new System.Drawing.Size(621, 432);
+            this.Controls.Add(this.gcCollectbtn);
+            this.Controls.Add(this.clearBindingbtn);
+            this.Controls.Add(this.setBindingBtn);
+            this.Controls.Add(this.bindStatusLabel);
+            this.Controls.Add(this.viewModelLabel);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "MainForm";
@@ -162,13 +253,14 @@
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.ListBox personListBox;
+        private RefreshListBox personListBox;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button addBtn;
         private System.Windows.Forms.Button removeBtn;
@@ -179,5 +271,13 @@
         private System.Windows.Forms.Integration.ElementHost wpfHost;
         private WPFControl wpfControl1;
         private System.Windows.Forms.TextBox nameTextbox;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label viewModelLabel;
+        private System.Windows.Forms.Button setBindingBtn;
+        private System.Windows.Forms.Button clearBindingbtn;
+        private System.Windows.Forms.Button gcCollectbtn;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label bindStatusLabel;
     }
 }
