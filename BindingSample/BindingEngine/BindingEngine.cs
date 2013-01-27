@@ -12,7 +12,7 @@ using System.Windows.Input;
 namespace BindingSample
 {
     /// <summary>
-    ///  A bind engine supports custom data binding.
+    ///  Binding engine supports custom data binding.
     /// </summary>
     /// <remarks>
     /// The binding engine use weak reference to hold the dependent, that means if u miss to clear data binding,
@@ -20,6 +20,7 @@ namespace BindingSample
     /// </remarks>
     /// <author>
     ///  yohan zhou 
+    ///  Email : yohan.zhou@gmail.com
     ///  http://www.cnblogs.com/zhouyongh
     /// </author>
     public class BindingEngine
@@ -32,40 +33,52 @@ namespace BindingSample
 
         #region Binding Methods
 
-        public static WeakMethodBinding SetMethodBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty, TTarget target, Expression<Func<TTarget, object>> targetProperty)
+        public static WeakProperyBinding SetPropertyBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
+                                                                              TTarget target, Expression<Func<TTarget, object>> targetExpression)
         {
-            var weakSource = GetWeakSource(source);
-            return weakSource.SetBindng<WeakMethodBinding>(target, sourceProperty.GetName(), targetProperty.GetName());
+            return SetPropertyBinding(source, sourceProperty.GetName(), target, targetExpression.GetName());
         }
 
-        public static WeakCommandBinding SetCommandBinding<TSource, TTarget>(TSource source, string sourceEvent, TTarget target, Expression<Func<TTarget, ICommand>> targetExpression)
-        {
-            var weakSource = GetWeakSource(source);
-            return weakSource.SetBindng<WeakCommandBinding>(target, null, targetExpression.GetName()).AttachSourceEvent(sourceEvent) as WeakCommandBinding;
-        }
-
-        public static WeakCollectionBinding SetCollectionBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty, TTarget target, Expression<Func<TTarget, object>> targetProperty)
+        public static WeakCollectionBinding SetCollectionBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
+                                                                                   TTarget target, Expression<Func<TTarget, object>> targetProperty)
         {
             return SetCollectionBinding(source, sourceProperty.GetName(), target, targetProperty.GetName());
         }
 
-        public static WeakCollectionBinding SetCollectionBinding(object source, string sourceProperty, object target, string targetProperty)
+        public static WeakCommandBinding SetCommandBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
+                                                                             TTarget target, Expression<Func<TTarget, ICommand>> targetExpression)
         {
-            var weakSource = GetWeakSource(source);
-            var weakCollectionBinding = weakSource.SetBindng<WeakCollectionBinding>(target, sourceProperty, targetProperty);
-            return weakCollectionBinding;
+            return SetCommandBinding(source, sourceProperty.GetName(), target, targetExpression.GetName());
         }
 
-        public static WeakProperyBinding SetPropertyBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty, TTarget target,
-            Expression<Func<TTarget, object>> targetExpression)
+        public static WeakMethodBinding SetMethodBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
+                                                                           TTarget target, Expression<Func<TTarget, object>> targetProperty)
         {
-            return SetPropertyBinding(source, sourceProperty.GetName(), target, targetExpression.GetName());
+            return SetMethodBinding(source, sourceProperty.GetName(), target, targetProperty.GetName());
         }
 
         public static WeakProperyBinding SetPropertyBinding(object source, string sourceProperty, object target, string targetProperty)
         {
             var weakSource = GetWeakSource(source);
             return weakSource.SetBindng<WeakProperyBinding>(target, sourceProperty, targetProperty);
+        }
+
+        public static WeakCollectionBinding SetCollectionBinding(object source, string sourceProperty, object target, string targetProperty)
+        {
+            var weakSource = GetWeakSource(source);
+            return weakSource.SetBindng<WeakCollectionBinding>(target, sourceProperty, targetProperty);
+        }
+
+        public static WeakCommandBinding SetCommandBinding(object source, string sourceProperty, object target, string targetProperty)
+        {
+            var weakSource = GetWeakSource(source);
+            return weakSource.SetBindng<WeakCommandBinding>(target, sourceProperty, targetProperty);
+        }
+
+        public static WeakMethodBinding SetMethodBinding(object source, string sourceProperty, object target, string targetProperty)
+        {
+            var weakSource = GetWeakSource(source);
+            return weakSource.SetBindng<WeakMethodBinding>(target, sourceProperty, targetProperty);
         }
 
         public static void ClearBinding(object source, string sourceProperty, object target, string targetProperty)
@@ -463,8 +476,7 @@ namespace BindingSample
 
         private Delegate AttactEvent(object instance, string eventName, string handlerName)
         {
-            var eventInfo = instance.GetType().GetEvent(eventName,
-                                                       BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            var eventInfo = instance.GetType().GetEvent(eventName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
             if (eventInfo == null)
             {
                 throw new ArgumentException(string.Format("The event {0} does not exist in {1}", eventName, instance.GetType()));
@@ -810,7 +822,7 @@ namespace BindingSample
             {
                 if (value != null && !SourcePropertyType.IsInstanceOfType(value))
                 {
-                    value = Convert.ChangeType(value, SourcePropertyType, CultureInfo.CurrentCulture);
+                    value = value.ConvertTo(SourcePropertyType);
                 }
                 EmitEngine.SetProperty(BindSource.Source, BindSource.Property, value);
             }
@@ -833,7 +845,7 @@ namespace BindingSample
             {
                 if (value != null && !TargetPropertyType.IsInstanceOfType(value))
                 {
-                    value = Convert.ChangeType(value, TargetPropertyType, CultureInfo.CurrentCulture);
+                    value = value.ConvertTo(TargetPropertyType);
                 }
                 EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, value);
             }
@@ -968,8 +980,6 @@ namespace BindingSample
                     case NotifyCollectionChangedAction.Reset:
                         Hanlder.Clear(BindSource.Value);
                         break;
-                    case NotifyCollectionChangedAction.Replace: //todo
-                    case NotifyCollectionChangedAction.Move:
                     default:
                         break;
 
@@ -1004,8 +1014,6 @@ namespace BindingSample
                     case NotifyCollectionChangedAction.Reset:
                         list.Clear();
                         break;
-                    case NotifyCollectionChangedAction.Replace: //todo
-                    case NotifyCollectionChangedAction.Move:
                     default:
                         break;
 
@@ -1030,8 +1038,9 @@ namespace BindingSample
 
     public class WeakCommandBinding : WeakProperyBinding
     {
+        public static readonly string RaiseCanExecuteChangedMethod = "RaiseCanExecuteChanged";
+
         private ICommand _command;
-        private MethodInfo _canExecuteChanged;
         private readonly IList<string> _enablesProperties = new List<string>();
         private readonly IList<string> _watchProperties = new List<string>();
 
@@ -1085,10 +1094,9 @@ namespace BindingSample
             {
                 command.CanExecuteChanged += CommandCanExecuteChanged;
 
-                _canExecuteChanged = command.GetType().GetMethod("RaiseCanExecuteChanged", BindingFlags.Instance | BindingFlags.Public);
-                if (_canExecuteChanged == null)
+                if (command.GetType().GetMethod(RaiseCanExecuteChangedMethod, BindingFlags.Instance | BindingFlags.Public) == null)
                 {
-                    throw new ArgumentException("The Command does not implement RaiseCanExecuteChanged to raise CanExecuteChanged event");
+                    throw new ArgumentException(string.Format("The Command does not implement {0} to raise CanExecuteChanged event", RaiseCanExecuteChangedMethod));
                 }
             }
             _command = command;
@@ -1096,7 +1104,7 @@ namespace BindingSample
 
         private void RaiseCanExecuteChanged()
         {
-            _canExecuteChanged.Invoke(_command, null);
+            EmitEngine.InvokeMethod(_command, RaiseCanExecuteChangedMethod, null);
         }
 
         private void CommandCanExecuteChanged(object sender, EventArgs e)
@@ -1132,9 +1140,23 @@ namespace BindingSample
             return this;
         }
 
+        public WeakCommandBinding RemoveEnableProperty(string propertyName)
+        {
+            if (_enablesProperties.Contains(propertyName))
+            {
+                _enablesProperties.Remove(propertyName);
+            }
+            return this;
+        }
+
         public WeakCommandBinding AddEnableProperty<T>(Expression<Func<T, bool>> propertyExpression) where T : class
         {
             return AddEnableProperty(propertyExpression.GetName());
+        }
+
+        public WeakCommandBinding RemoveEnableProperty<T>(Expression<Func<T, bool>> propertyExpression) where T : class
+        {
+            return RemoveEnableProperty(propertyExpression.GetName());
         }
 
         public WeakCommandBinding Watch(params string[] properties)
@@ -1154,6 +1176,23 @@ namespace BindingSample
             return this;
         }
 
+        public WeakCommandBinding UnWatch(params string[] properties)
+        {
+            if (properties == null)
+            {
+                return this;
+            }
+            foreach (var property in properties)
+            {
+                if (_watchProperties.Contains(property))
+                {
+                    _watchProperties.Remove(property);
+                }
+            }
+            RaiseCanExecuteChanged();
+            return this;
+        }
+
         public WeakCommandBinding Watch<T>(params Expression<Func<T, object>>[] propertyExpression) where T : class
         {
             if (propertyExpression == null)
@@ -1161,6 +1200,15 @@ namespace BindingSample
                 return this;
             }
             return Watch(propertyExpression.Select(item => item.GetName()).ToArray());
+        }
+
+        public WeakCommandBinding UnWatch<T>(params Expression<Func<T, object>>[] propertyExpression) where T : class
+        {
+            if (propertyExpression == null)
+            {
+                return this;
+            }
+            return UnWatch(propertyExpression.Select(item => item.GetName()).ToArray());
         }
 
         public override void Clear()
@@ -1177,8 +1225,8 @@ namespace BindingSample
     {
         private string _sourceExpression;
         private string _targetExpression;
-        private List<BindMethodParameter> _sourceParameters = new List<BindMethodParameter>();
-        private List<BindMethodParameter> _targetParameters = new List<BindMethodParameter>();
+        private readonly List<BindMethodParameter> _sourceParameters = new List<BindMethodParameter>();
+        private readonly List<BindMethodParameter> _targetParameters = new List<BindMethodParameter>();
 
         public WeakMethodBinding(object source, object target, string sourceProperty, string targetProperty)
             : base(source, target, sourceProperty, targetProperty)
@@ -1187,13 +1235,14 @@ namespace BindingSample
 
         private IEnumerable<object> GetMethodParameters(IEnumerable<BindMethodParameter> parameters)
         {
-            if (!parameters.Any())
+            var bindMethodParameters = parameters as BindMethodParameter[] ?? parameters.ToArray();
+            if (!bindMethodParameters.Any())
             {
                 return null;
             }
 
             List<object> ps = new List<object>();
-            foreach (var parameter in parameters)
+            foreach (var parameter in bindMethodParameters)
             {
                 object obj;
                 if (parameter.Kind == BindObjectMode.Source)
@@ -1286,6 +1335,11 @@ namespace BindingSample
             return this;
         }
 
+        public WeakMethodBinding AttachSourceMethod<T>(Expression<Func<T, object>> sourceExpression, string sourceMethod, params BindMethodParameter[] parameters)
+        {
+            return AttachSourceMethod(sourceExpression.GetName(), sourceMethod, parameters);
+        }
+
         public WeakMethodBinding AttachTargetMethod(string targetMethod, params BindMethodParameter[] parameters)
         {
             return AttachTargetMethod(null, targetMethod, parameters);
@@ -1303,6 +1357,11 @@ namespace BindingSample
             TargetMethod = targetMethod;
             Update();
             return this;
+        }
+
+        public WeakMethodBinding AttachTargetMethod<T>(Expression<Func<T, object>> sourceExpression, string sourceMethod, params BindMethodParameter[] parameters)
+        {
+            return AttachTargetMethod(sourceExpression.GetName(), sourceMethod, parameters);
         }
 
         public string SourceMethod { get; set; }
@@ -1369,9 +1428,10 @@ namespace BindingSample
             var lambda = (LambdaExpression)expression;
 
             MemberExpression memberExpression;
-            if (lambda.Body is UnaryExpression)
+            var body = lambda.Body as UnaryExpression;
+            if (body != null)
             {
-                var unaryExpression = (UnaryExpression)lambda.Body;
+                var unaryExpression = body;
                 memberExpression = (MemberExpression)unaryExpression.Operand;
             }
             else
@@ -1413,6 +1473,37 @@ namespace BindingSample
             }
             int index = str.LastIndexOf(content, StringComparison.Ordinal);
             return str.Substring(0, index);
+        }
+    }
+
+    public static class ObejctExtension
+    {
+        public static object ConvertTo(this object value, Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            if (value == null || ReferenceEquals(value, string.Empty))
+            {
+                return type.DefaultValue();
+            }
+
+            Type t = Nullable.GetUnderlyingType(type) ?? type;
+            return Convert.ChangeType(value, t);
+        }
+    }
+
+    public static class TypeExtension
+    {
+        public static object DefaultValue(this Type type)
+        {
+            if (type == null)
+            {
+                return new ArgumentNullException("type");
+            }
+            return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
     }
 }

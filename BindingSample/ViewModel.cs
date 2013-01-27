@@ -2,13 +2,48 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.Windows.Input;
 
 namespace BindingSample
 {
+    public class Command : ICommand
+    {
+        private readonly Action<object> _execute;
+        private readonly Func<object, bool> _canExecute;
+        public event EventHandler CanExecuteChanged;
+
+        public Command(Action<object> execute)
+        {
+            _execute = execute;
+        }
+
+        public Command(Action<object> execute, Func<object, bool> canExecute)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            if (_canExecute != null)
+                return _canExecute(parameter);
+            return true;
+        }
+
+        public void Execute(object parameter)
+        {
+            if (_execute != null)
+                _execute(parameter);
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            EventHandler handler = CanExecuteChanged;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
+        }
+    }
+
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -22,11 +57,27 @@ namespace BindingSample
         }
     }
 
+    public class DataWarehouse : ViewModelBase
+    {
+        private MainViewModel _viewModel = new MainViewModel();
+        public MainViewModel MainViewModel
+        {
+            get { return _viewModel; }
+            set
+            {
+                _viewModel = value;
+                NotifyPropertyChanged("MainViewModel");
+            }
+        }
+
+        public static DataWarehouse Instance = new DataWarehouse();
+    }
+
     public class MainViewModel : ViewModelBase
     {
         public MainViewModel()
         {
-            Commands.Add("AddCommand", new Command(o => Persons.Add(new Person() { Name = string.Format("yohan " + number++) })));
+            Commands.Add("AddCommand", new Command(o => Persons.Add(new Person() { Name = string.Format("yohan " + _number++) })));
             Commands.Add("RemoveCommand", new Command(o => Persons.Remove(CurrentPerson), o => CurrentPerson != null));
             Commands.Add("ClearCommand", new Command(o => Persons.Clear()));
         }
@@ -42,6 +93,20 @@ namespace BindingSample
             }
         }
 
+        private int? _key = 2;
+        public int? Key
+        {
+            get
+            {
+                return _key;
+            }
+            set
+            {
+                _key = value;
+                NotifyPropertyChanged("Key");
+            }
+        }
+
         private Person _currentPerson = new Person();
         public Person CurrentPerson
         {
@@ -53,7 +118,7 @@ namespace BindingSample
             }
         }
 
-        private static int number = 0;
+        private static int _number;
         public ICommand AddCommand
         {
             get

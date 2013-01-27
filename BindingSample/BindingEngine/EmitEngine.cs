@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Linq;
-using System.Collections.Concurrent;
 
 namespace BindingSample
 {
@@ -28,7 +27,7 @@ namespace BindingSample
     ///  testObj.Name = "1"; &lt;-- equals to:  --&gt; EmitEngine.SetProperty(testObj, "Name", "1");
     ///  
     /// 2.CreateInstance
-    ///  TestObject testObj = new TestObject();   &lt;-- equals to:  --&gt; TestObject testObj = EmitEngine.CreateInstance<TestObject>();
+    ///  TestObject testObj = new TestObject();   &lt;-- equals to:  --&gt; TestObject testObj = EmitEngine.CreateInstance&lt;TestObject&gt;();
     /// 
     /// 3.Invoke Method
     ///  TestObject testObj = new TestObject();
@@ -166,13 +165,10 @@ namespace BindingSample
                 {
                     return Activator.CreateInstance(type, parameters);
                 }
-                else
+                valueTypes = new Type[parameters.Length];
+                for (int i = 0; i < parameters.Length; i++)
                 {
-                    valueTypes = new Type[parameters.Length];
-                    for (int i = 0; i < parameters.Length; i++)
-                    {
-                        valueTypes[i] = parameters[i].GetType();
-                    }
+                    valueTypes[i] = parameters[i].GetType();
                 }
             }
 
@@ -181,10 +177,8 @@ namespace BindingSample
             {
                 return method.Invoke(null, new object[] { parameters });
             }
-            else // This type is stupid Struct that does not have constructors.
-            {
-                return Activator.CreateInstance(type);
-            }
+            // This type is stupid Struct that does not have constructors.
+            return Activator.CreateInstance(type);
         }
 
         /// <summary>
@@ -310,10 +304,10 @@ namespace BindingSample
             {
                 var getter = new DynamicMethod("__get_field_" + key, fieldInfo.FieldType, new[] { t }, typeof(EmitEngine), true);
 
-                var getterIL = getter.GetILGenerator();
-                getterIL.Emit(OpCodes.Ldarg_0);
-                getterIL.Emit(OpCodes.Ldfld, fieldInfo);
-                getterIL.Emit(OpCodes.Ret);
+                var getterIl = getter.GetILGenerator();
+                getterIl.Emit(OpCodes.Ldarg_0);
+                getterIl.Emit(OpCodes.Ldfld, fieldInfo);
+                getterIl.Emit(OpCodes.Ret);
 
                 fieldGetters.TryAdd(key, getter);
             }
@@ -526,6 +520,7 @@ namespace BindingSample
         }
 
         /// <summary>Emits the cast to a reference, unboxing if needed.</summary>
+        /// <param name="ilGenerator"></param>
         /// <param name="type">The type to cast.</param>
         private static void EmitCastToReference(ILGenerator ilGenerator, Type type)
         {
