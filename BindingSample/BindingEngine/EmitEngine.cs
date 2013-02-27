@@ -130,7 +130,7 @@ namespace BindingSample
         /// <returns></returns>
         public static object InvokeMethod(object instance, string methodName, out Type returnType, IEnumerable<object> parameters)
         {
-            returnType = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public).ReturnType;
+            returnType = instance.GetType().GetMethods().First(item => item.Name.Equals(methodName)).ReturnType;
             return InvokeMethod(instance, methodName, parameters);
         }
 
@@ -203,7 +203,7 @@ namespace BindingSample
         public static Func<T, TResult> GetPropertyDelegate<T, TResult>(string propName)
         {
             Type type = typeof(T);
-            var method = PropertyGetterMethod(type, propName);
+            var method = PropertyGetterMethod(propName, type);
             return (Func<T, TResult>)method.CreateDelegate(typeof(Func<T, TResult>));
         }
 
@@ -354,6 +354,18 @@ namespace BindingSample
         private static DynamicMethod PropertyGetterMethod(object instance, string propertyName)
         {
             var t = instance.GetType();
+            return PropertyGetterMethod(propertyName, t);
+        }
+
+        /// <summary>
+        /// Properties the getter method.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="t">The t.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentException">There is no publicly accessible  + propertyName +  property found in  + t.FullName</exception>
+        private static DynamicMethod PropertyGetterMethod(string propertyName, Type t)
+        {
             var key = (t.FullName + "_" + propertyName).Replace(".", "_");
             if (!propertyGetters.ContainsKey(key))
             {
@@ -423,9 +435,9 @@ namespace BindingSample
             var key = (t.FullName + "_" + methodName).Replace(".", "_");
             if (!methodInvokers.ContainsKey(key))
             {
-                var methodInfo = t.GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
+                var methodInfo = t.GetMethods().FirstOrDefault(item => item.Name.Equals(methodName));
                 if (methodInfo == null)
-                    throw new ArgumentException("There is no publicly accessible " + methodName + " method found in " + t.FullName);
+                    throw new ArgumentException("There is no accessible " + methodName + " method found in " + t.FullName);
 
                 DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module);
 

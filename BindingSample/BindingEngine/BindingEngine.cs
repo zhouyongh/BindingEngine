@@ -40,9 +40,9 @@ namespace BindingSample
         }
 
         public static WeakCollectionBinding SetCollectionBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
-                                                                                   TTarget target, Expression<Func<TTarget, object>> targetProperty)
+                                                                                   TTarget target, Expression<Func<TTarget, object>> targetProperty, bool update = true)
         {
-            return SetCollectionBinding(source, sourceProperty.GetName(), target, targetProperty.GetName());
+            return SetCollectionBinding(source, sourceProperty.GetName(), target, targetProperty.GetName(), update);
         }
 
         public static WeakCommandBinding SetCommandBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
@@ -63,10 +63,10 @@ namespace BindingSample
             return weakSource.SetBindng<WeakProperyBinding>(target, sourceProperty, targetProperty);
         }
 
-        public static WeakCollectionBinding SetCollectionBinding(object source, string sourceProperty, object target, string targetProperty)
+        public static WeakCollectionBinding SetCollectionBinding(object source, string sourceProperty, object target, string targetProperty, bool update = true)
         {
             var weakSource = GetWeakSource(source);
-            return weakSource.SetBindng<WeakCollectionBinding>(target, sourceProperty, targetProperty);
+            return weakSource.SetBindng<WeakCollectionBinding>(target, sourceProperty, targetProperty, update);
         }
 
         public static WeakCommandBinding SetCommandBinding(object source, string sourceProperty, object target, string targetProperty)
@@ -171,7 +171,7 @@ namespace BindingSample
             {
             }
 
-            public T SetBindng<T>(object target, string sourceProperty, string targetProperty) where T : WeakBinding
+            public T SetBindng<T>(object target, string sourceProperty, string targetProperty, object extraParameter = null) where T : WeakBinding
             {
                 WeakEntry entry = new WeakEntry(target.GetHashCode(), sourceProperty, targetProperty);
                 WeakBinding binding;
@@ -186,7 +186,14 @@ namespace BindingSample
                 }
                 else
                 {
-                    binding = EmitEngine.CreateInstance<T>(Target, target, sourceProperty, targetProperty);
+                    if (extraParameter != null)
+                    {
+                        binding = EmitEngine.CreateInstance<T>(Target, target, sourceProperty, targetProperty, extraParameter);
+                    }
+                    else
+                    {
+                        binding = EmitEngine.CreateInstance<T>(Target, target, sourceProperty, targetProperty);
+                    }
                     _bindings.Add(entry, binding);
                 }
 
@@ -752,11 +759,21 @@ namespace BindingSample
             }
             else if (_bindMode != BindMode.OneWay && BindSource.Source is INotifyPropertyChanged)
             {
-                SourceEventFilter = (o, args) => ((PropertyChangedEventArgs)args).PropertyName == BindSource.Property;
+                SourceEventFilter = (o, args) =>
+                {
+                    if (args is PropertyChangedEventArgs)
+                    {
+                        return ((PropertyChangedEventArgs)args).PropertyName == BindSource.Property;
+                    }
+                    return true;
+                };
                 AttachSourceEvent("PropertyChanged");
             }
 
-            Update(false);
+            if (_bindMode == BindMode.TwoWay || _bindMode == BindMode.OneWayToTarget)
+            {
+                Update(false);
+            }
         }
 
         protected virtual void DoTargetConventions()
@@ -770,11 +787,21 @@ namespace BindingSample
             }
             else if (_bindMode != BindMode.OneWayToTarget && BindTarget.Source is INotifyPropertyChanged)
             {
-                TargetEventFilter = (o, args) => ((PropertyChangedEventArgs)args).PropertyName == BindTarget.Property;
+                TargetEventFilter = (o, args) =>
+                {
+                    if (args is PropertyChangedEventArgs)
+                    {
+                        return ((PropertyChangedEventArgs)args).PropertyName == BindTarget.Property;
+                    }
+                    return true;
+                };
                 AttachTargetEvent("PropertyChanged");
             }
 
-            Update();
+            if (_bindMode != BindMode.OneWayToTarget)
+            {
+                Update();
+            }
         }
 
         private bool _isUpdating;
@@ -816,7 +843,7 @@ namespace BindingSample
 
             if (DataConverter != null)
             {
-                EmitEngine.SetProperty(BindSource.Source, BindSource.Property, DataConverter.ConvertBack(value, Parameter));
+                EmitEngine.SetProperty(BindSource.Source, BindSource.Property, DataConverter.Convert(value, Parameter));
             }
             else
             {
@@ -839,7 +866,7 @@ namespace BindingSample
 
             if (DataConverter != null)
             {
-                EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, DataConverter.Convert(value, Parameter));
+                EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, DataConverter.ConvertBack(value, Parameter));
             }
             else
             {
@@ -866,17 +893,30 @@ namespace BindingSample
             return this;
         }
 
-        public IDataConverter DataConverter { get; set; }
+        private IDataConverter _dataConverter;
+        public IDataConverter DataConverter
+        {
+            get { return _dataConverter; }
+            set
+            {
+                _dataConverter = value;
+                BindSource.NotifyValueChanged(); //Update
+                BindTarget.NotifyValueChanged();
+            }
+        }
 
         public object Parameter { get; set; }
     }
 
     public class WeakCollectionBinding : WeakProperyBinding
     {
-        public WeakCollectionBinding(object source, object target, string sourceProperty, string targetProperty)
+        public WeakCollectionBinding(object source, object target, string sourceProperty, string targetProperty, bool update = true)
             : base(source, target, sourceProperty, targetProperty)
         {
-            UpdateCollection();
+            if (update)
+            {
+                UpdateCollection();
+            }
         }
 
         protected override void SourceToTarget()
@@ -914,42 +954,46 @@ namespace BindingSample
 
         private void UpdateCollection()
         {
+            bool handleChange = true;
             //1. Clear
             if (Hanlder != null)
             {
-                Hanlder.Clear(BindSource.Value);
+                handleChange = !Hanlder.Clear(BindSource.Value);
             }
 
             IList sources = BindSource.Value as IList;
-            if (sources != null)
+            if (handleChange && sources != null)
             {
                 sources.Clear();
             }
 
             //2. Regenerate
             IList targets = BindTarget.Value as IList;
-            if (sources != null && targets != null)
+            if (targets != null)
             {
                 for (int i = 0; i < targets.Count; i++)
                 {
+                    handleChange = true;
                     var target = targets[i];
                     if (Hanlder != null)
                     {
-                        Hanlder.AddItem(i, target, BindSource.Value);
+                        handleChange = !Hanlder.AddItem(i, target, BindSource.Value);
                     }
-                    else if (DataGenerator != null)
+                    if (handleChange && sources != null)
                     {
-                        sources.Add(DataGenerator.Generate(target, Parameter));
+                        if (DataGenerator != null)
+                        {
+                            sources.Add(DataGenerator.Generate(target, Parameter));
+                        }
+                        else if (Generator != null)
+                        {
+                            sources.Add(Generator(BindSource.Value, target));
+                        }
+                        else
+                        {
+                            sources.Add(target);
+                        }
                     }
-                    else if (Generator != null)
-                    {
-                        sources.Add(Generator(BindSource.Value, target));
-                    }
-                    else
-                    {
-                        sources.Add(target);
-                    }
-
                 }
             }
         }
@@ -967,25 +1011,27 @@ namespace BindingSample
                 throw new NotSupportedException("Currently WeakCollectionBinding only support INotifyCollectionChanged");
             }
 
+            bool handleChange = true;
+
             if (Hanlder != null)
             {
                 switch (notifyEventArgs.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        Hanlder.AddItem(notifyEventArgs.NewStartingIndex, notifyEventArgs.NewItems[0], BindSource.Value);
+                        handleChange = !Hanlder.AddItem(notifyEventArgs.NewStartingIndex, notifyEventArgs.NewItems[0], BindSource.Value);
                         break;
                     case NotifyCollectionChangedAction.Remove:
-                        Hanlder.RemoveItem(notifyEventArgs.OldStartingIndex, notifyEventArgs.OldItems[0], BindSource.Value);
+                        handleChange = !Hanlder.RemoveItem(notifyEventArgs.OldStartingIndex, notifyEventArgs.OldItems[0], BindSource.Value);
                         break;
                     case NotifyCollectionChangedAction.Reset:
-                        Hanlder.Clear(BindSource.Value);
+                        handleChange = !Hanlder.Clear(BindSource.Value);
                         break;
                     default:
                         break;
 
                 }
             }
-            else
+            if (handleChange)
             {
                 IList list = BindSource.Value as IList;
                 if (list == null)
@@ -1249,9 +1295,13 @@ namespace BindingSample
                 {
                     obj = parameter.Property == null ? BindSource.Source : EmitEngine.GetProperty(BindSource.Source, parameter.Property);
                 }
-                else
+                else if (parameter.Kind == BindObjectMode.Target)
                 {
                     obj = parameter.Property == null ? BindTarget.Source : EmitEngine.GetProperty(BindTarget.Source, parameter.Property);
+                }
+                else
+                {
+                    obj = parameter.Parameter;
                 }
                 ps.Add(obj);
             }
@@ -1372,6 +1422,7 @@ namespace BindingSample
     {
         public BindObjectMode Kind;
         public string Property;
+        public object Parameter;
 
         public BindMethodParameter(BindObjectMode kind)
             : this(kind, null)
@@ -1382,6 +1433,14 @@ namespace BindingSample
         {
             Kind = kind;
             Property = property;
+            Parameter = null;
+        }
+
+        public BindMethodParameter(object parameter)
+        {
+            Kind = BindObjectMode.Other;
+            Parameter = parameter;
+            Property = null;
         }
     }
 
@@ -1398,7 +1457,6 @@ namespace BindingSample
         OneWayToTarget,
         TwoWay
     }
-
     public interface IDataConverter
     {
         object Convert(object value, object parameter);
@@ -1412,9 +1470,10 @@ namespace BindingSample
 
     public interface ICollectionHandler
     {
-        void AddItem(int index, object item, object source);
-        void RemoveItem(int index, object item, object source);
-        void Clear(object source);
+        // Return value indicates whether the ICollectionHandler handle the change, if handled, the default handle logic will ignore it. 
+        bool AddItem(int index, object item, object source);
+        bool RemoveItem(int index, object item, object source);
+        bool Clear(object source);
     }
 
     public static class ExpressionExtension
