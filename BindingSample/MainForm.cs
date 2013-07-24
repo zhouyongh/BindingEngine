@@ -45,14 +45,7 @@ namespace BindingSample
                          .AttachSourceEvent("SelectedValueChanged");
             BindingEngine.SetPropertyBinding(countText, i => i.Text, DataWarehouse.Instance, o => o.MainViewModel.Persons.Count);
 
-            BindingEngine.SetCollectionBinding(personListBox, i => i.Items, DataWarehouse.Instance, o => o.MainViewModel.Persons).Generator = (listbox, o1) =>
-            {
-                BindingEngine.SetMethodBinding(listbox, null, o1, o => (o as Person).Name)
-                             .AttachSourceMethod("RefreshListBoxItem", new BindMethodParameter(BindObjectMode.Target))
-                             .SetMode(BindMode.OneWayToTarget)
-                             .AttachSourceEvent(BindObjectMode.Target, null, "PropertyChanged");
-                return o1;
-            };
+            BindingEngine.SetCollectionBinding(personListBox, i => i.Items, DataWarehouse.Instance, o => o.MainViewModel.Persons).Handler = new ListBoxCollectionHanlder();
 
             BindingEngine.SetCommandBinding(addBtn, null, DataWarehouse.Instance, i => i.MainViewModel.AddCommand)
                          .AddEnableProperty<Button>(button => button.Enabled).AttachSourceEvent("Click");
@@ -63,6 +56,30 @@ namespace BindingSample
                          .AddEnableProperty<Button>(button => button.Enabled).AttachSourceEvent("Click");
 
             bindStatusLabel.Text = "Binded";
+        }
+
+        private class ListBoxCollectionHanlder : ICollectionHandler
+        {
+            public bool AddItem(int index, object item, object source, object sourceProperty)
+            {
+                BindingEngine.SetMethodBinding(source, null, item, o => (o as Person).Name)
+                             .AttachSourceMethod("RefreshListBoxItem", new BindMethodParameter(BindObjectMode.Target))
+                             .SetMode(BindMode.OneWayToTarget)
+                             .AttachSourceEvent(BindObjectMode.Target, null, "PropertyChanged");
+
+                //Return false to let the default collection work, ListBox will and the Person as the ListBoxItem.
+                return false;
+            }
+
+            public bool RemoveItem(int index, object item, object source, object sourceProperty)
+            {
+                return false;
+            }
+
+            public bool Clear(object source, object sourceProperty)
+            {
+                return false;
+            }
         }
 
         private void changeViewModel_Click(object sender, EventArgs e)

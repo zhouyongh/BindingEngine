@@ -21,6 +21,7 @@ namespace BindingSample
     /// <author>
     ///  yohan zhou 
     ///  Email : yohan.zhou@gmail.com
+    ///  https://github.com/zhouyongh/BindingEngine
     ///  http://www.cnblogs.com/zhouyongh
     /// </author>
     public class BindingEngine
@@ -79,6 +80,14 @@ namespace BindingSample
         {
             var weakSource = GetWeakSource(source);
             return weakSource.SetBindng<WeakMethodBinding>(target, sourceProperty, targetProperty);
+        }
+
+        public static void ClearBinding(object source)
+        {
+            var weakSource = GetWeakSource(source);
+            weakSource.ClearBindings();
+
+            weakSources.Remove(weakSource.GetHashCode());
         }
 
         public static void ClearBinding(object source, string sourceProperty, object target, string targetProperty)
@@ -841,17 +850,26 @@ namespace BindingSample
 
             object value = BindTarget.Source != null ? EmitEngine.GetProperty(BindTarget.Source, BindTarget.Property) : EmitEngine.CreateDefaultValue(SourcePropertyType);
 
+            object oldValue = value;
+            if (SourceChanged != null)
+            {
+                oldValue = EmitEngine.GetProperty(BindSource.Source, BindSource.Property);
+            }
+
             if (DataConverter != null)
             {
-                EmitEngine.SetProperty(BindSource.Source, BindSource.Property, DataConverter.Convert(value, Parameter));
+                value = DataConverter.Convert(value, Parameter);
             }
-            else
+            else if (value != null && !SourcePropertyType.IsInstanceOfType(value))
             {
-                if (value != null && !SourcePropertyType.IsInstanceOfType(value))
-                {
-                    value = value.ConvertTo(SourcePropertyType);
-                }
-                EmitEngine.SetProperty(BindSource.Source, BindSource.Property, value);
+                value = value.ConvertTo(SourcePropertyType);
+            }
+
+            EmitEngine.SetProperty(BindSource.Source, BindSource.Property, value);
+
+            if (SourceChanged != null)
+            {
+                SourceChanged(BindSource.Source, new BindingValueChangedEventArgs(oldValue, value));
             }
         }
 
@@ -864,17 +882,26 @@ namespace BindingSample
 
             object value = BindSource.Source != null ? EmitEngine.GetProperty(BindSource.Source, BindSource.Property) : EmitEngine.CreateDefaultValue(TargetPropertyType);
 
+            object oldValue = value;
+            if (TargetChanged != null)
+            {
+                oldValue = EmitEngine.GetProperty(BindTarget.Source, BindTarget.Property);
+            }
+
             if (DataConverter != null)
             {
-                EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, DataConverter.ConvertBack(value, Parameter));
+                value = DataConverter.ConvertBack(value, Parameter);
             }
-            else
+            else if (value != null && !TargetPropertyType.IsInstanceOfType(value))
             {
-                if (value != null && !TargetPropertyType.IsInstanceOfType(value))
-                {
-                    value = value.ConvertTo(TargetPropertyType);
-                }
-                EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, value);
+                value = value.ConvertTo(TargetPropertyType);
+            }
+
+            EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, value);
+
+            if (TargetChanged != null)
+            {
+                TargetChanged(BindTarget.Source, new BindingValueChangedEventArgs(oldValue, value));
             }
         }
 
@@ -905,14 +932,31 @@ namespace BindingSample
             }
         }
 
-        public object Parameter { get; set; }
+        private object _parameter;
+        public object Parameter
+        {
+            get { return _parameter; }
+            set
+            {
+                _parameter = value;
+                BindSource.NotifyValueChanged(); //Update
+                BindTarget.NotifyValueChanged();
+            }
+        }
+
+        public BindingValueChangedCallback SourceChanged { get; set; }
+        public BindingValueChangedCallback TargetChanged { get; set; }
     }
 
     public class WeakCollectionBinding : WeakProperyBinding
     {
+        // A bool field indicate whether the constructor has been called, this is avoid call virtual method in Constructor of base class.
+        private bool isConstructorCalled;
+
         public WeakCollectionBinding(object source, object target, string sourceProperty, string targetProperty, bool update = true)
             : base(source, target, sourceProperty, targetProperty)
         {
+            isConstructorCalled = true;
             if (update)
             {
                 UpdateCollection();
@@ -945,7 +989,14 @@ namespace BindingSample
                 }
                 else
                 {
-                    AttachTargetEvent(TargetProperty.LastLeft("."), "CollectionChanged");
+                    if (TargetProperty != null)
+                    {
+                        AttachTargetEvent(TargetProperty.LastLeft("."), "CollectionChanged");
+                    }
+                    else
+                    {
+                        AttachTargetEvent(BindObjectMode.Target, null, "CollectionChanged");
+                    }
                 }
             }
 
@@ -954,11 +1005,16 @@ namespace BindingSample
 
         private void UpdateCollection()
         {
+            if (!isConstructorCalled)
+            {
+                return;
+            }
+
             bool handleChange = true;
             //1. Clear
-            if (Hanlder != null)
+            if (Handler != null)
             {
-                handleChange = !Hanlder.Clear(BindSource.Value);
+                handleChange = !Handler.Clear(BindSource.Source, BindSource.Value);
             }
 
             IList sources = BindSource.Value as IList;
@@ -971,13 +1027,18 @@ namespace BindingSample
             IList targets = BindTarget.Value as IList;
             if (targets != null)
             {
+                if (DataGenerator == null && Generator == null && Handler == null && targets.GetType() != sources.GetType())
+                {
+                    return;
+                }
+
                 for (int i = 0; i < targets.Count; i++)
                 {
                     handleChange = true;
                     var target = targets[i];
-                    if (Hanlder != null)
+                    if (Handler != null)
                     {
-                        handleChange = !Hanlder.AddItem(i, target, BindSource.Value);
+                        handleChange = !Handler.AddItem(i, target, BindSource.Source, BindSource.Value);
                     }
                     if (handleChange && sources != null)
                     {
@@ -987,7 +1048,7 @@ namespace BindingSample
                         }
                         else if (Generator != null)
                         {
-                            sources.Add(Generator(BindSource.Value, target));
+                            sources.Add(Generator(target, Parameter));
                         }
                         else
                         {
@@ -1013,18 +1074,18 @@ namespace BindingSample
 
             bool handleChange = true;
 
-            if (Hanlder != null)
+            if (Handler != null)
             {
                 switch (notifyEventArgs.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
-                        handleChange = !Hanlder.AddItem(notifyEventArgs.NewStartingIndex, notifyEventArgs.NewItems[0], BindSource.Value);
+                        handleChange = !Handler.AddItem(notifyEventArgs.NewStartingIndex, notifyEventArgs.NewItems[0], BindSource.Source, BindSource.Value);
                         break;
                     case NotifyCollectionChangedAction.Remove:
-                        handleChange = !Hanlder.RemoveItem(notifyEventArgs.OldStartingIndex, notifyEventArgs.OldItems[0], BindSource.Value);
+                        handleChange = !Handler.RemoveItem(notifyEventArgs.OldStartingIndex, notifyEventArgs.OldItems[0], BindSource.Source, BindSource.Value);
                         break;
                     case NotifyCollectionChangedAction.Reset:
-                        handleChange = !Hanlder.Clear(BindSource.Value);
+                        handleChange = !Handler.Clear(BindSource.Source, BindSource.Value);
                         break;
                     default:
                         break;
@@ -1047,7 +1108,7 @@ namespace BindingSample
                         }
                         else if (Generator != null)
                         {
-                            list.Add(Generator(BindSource.Source, notifyEventArgs.NewItems[0]));
+                            list.Add(Generator(notifyEventArgs.NewItems[0], Parameter));
                         }
                         else
                         {
@@ -1068,18 +1129,33 @@ namespace BindingSample
             return true;
         }
 
-        public IDataGenerator DataGenerator { get; set; }
+        private IDataGenerator _dataGenerator;
+        public IDataGenerator DataGenerator
+        {
+            get { return _dataGenerator; }
+            set { _dataGenerator = value; UpdateCollection(); }
+        }
 
-        public Func<object, object, object> Generator;
+        private Func<object, object, object> _generator;
+        public Func<object, object, object> Generator
+        {
+            get { return _generator; }
+            set { _generator = value; UpdateCollection(); }
+        }
 
         private ICollectionHandler _handler;
-        public ICollectionHandler Hanlder
+        public ICollectionHandler Handler
         {
             get { return _handler; }
             set { _handler = value; UpdateCollection(); }
         }
 
-        public object Parameter { get; set; }
+        private object _parameter;
+        public object Parameter
+        {
+            get { return _parameter; }
+            set { _parameter = value; UpdateCollection(); }
+        }
     }
 
     public class WeakCommandBinding : WeakProperyBinding
@@ -1145,6 +1221,7 @@ namespace BindingSample
                     throw new ArgumentException(string.Format("The Command does not implement {0} to raise CanExecuteChanged event", RaiseCanExecuteChangedMethod));
                 }
             }
+
             _command = command;
         }
 
@@ -1323,17 +1400,26 @@ namespace BindingSample
                 return;
             }
 
+            object oldValue = value;
+            if (TargetChanged != null)
+            {
+                oldValue = EmitEngine.GetProperty(BindTarget.Source, BindTarget.Property);
+            }
+
             if (DataConverter != null)
             {
-                EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, DataConverter.ConvertBack(value, Parameter));
+                value = DataConverter.ConvertBack(value, Parameter);
             }
-            else
+            else if (value != null && !TargetPropertyType.IsInstanceOfType(value))
             {
-                if (value != null && !TargetPropertyType.IsInstanceOfType(value))
-                {
-                    value = Convert.ChangeType(value, TargetPropertyType, CultureInfo.CurrentCulture);
-                }
-                EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, value);
+                value = Convert.ChangeType(value, TargetPropertyType, CultureInfo.CurrentCulture);
+            }
+
+            EmitEngine.SetProperty(BindTarget.Source, BindTarget.Property, value);
+
+            if (TargetChanged != null)
+            {
+                TargetChanged(BindTarget.Source, new BindingValueChangedEventArgs(oldValue, value));
             }
         }
 
@@ -1352,17 +1438,26 @@ namespace BindingSample
                 return;
             }
 
+            object oldValue = value;
+            if (SourceChanged != null)
+            {
+                oldValue = EmitEngine.GetProperty(BindSource.Source, BindSource.Property);
+            }
+
             if (DataConverter != null)
             {
-                EmitEngine.SetProperty(BindSource.Source, BindSource.Property, DataConverter.ConvertBack(value, Parameter));
+                value = DataConverter.ConvertBack(value, Parameter);
             }
-            else
+            else if (value != null && !SourcePropertyType.IsInstanceOfType(value))
             {
-                if (value != null && !SourcePropertyType.IsInstanceOfType(value))
-                {
-                    value = Convert.ChangeType(value, SourcePropertyType, CultureInfo.CurrentCulture);
-                }
-                EmitEngine.SetProperty(BindSource.Source, BindSource.Property, value);
+                value = Convert.ChangeType(value, SourcePropertyType, CultureInfo.CurrentCulture);
+            }
+
+            EmitEngine.SetProperty(BindSource.Source, BindSource.Property, value);
+
+            if (SourceChanged != null)
+            {
+                SourceChanged(BindSource.Source, new BindingValueChangedEventArgs(oldValue, value));
             }
         }
 
@@ -1457,6 +1552,21 @@ namespace BindingSample
         OneWayToTarget,
         TwoWay
     }
+
+    public delegate void BindingValueChangedCallback(object source, BindingValueChangedEventArgs e);
+
+    public class BindingValueChangedEventArgs : EventArgs
+    {
+        public object OldValue { get; set; }
+        public object NewValue { get; set; }
+
+        public BindingValueChangedEventArgs(object oldValue, object newValue)
+        {
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
+    }
+
     public interface IDataConverter
     {
         object Convert(object value, object parameter);
@@ -1471,9 +1581,9 @@ namespace BindingSample
     public interface ICollectionHandler
     {
         // Return value indicates whether the ICollectionHandler handle the change, if handled, the default handle logic will ignore it. 
-        bool AddItem(int index, object item, object source);
-        bool RemoveItem(int index, object item, object source);
-        bool Clear(object source);
+        bool AddItem(int index, object item, object source, object sourceProperty);
+        bool RemoveItem(int index, object item, object source, object sourceProperty);
+        bool Clear(object source, object sourceProperty);
     }
 
     public static class ExpressionExtension
