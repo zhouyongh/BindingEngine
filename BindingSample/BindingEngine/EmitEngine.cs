@@ -255,7 +255,7 @@ namespace BindingSample
 
             if (!instanceCreators.ContainsKey(key))
             {
-                DynamicMethod dm = new DynamicMethod(key, typeof(object), new Type[] { typeof(object[]) }, typeof(EmitEngine).Module, true);
+                var dm = new DynamicMethod(key, typeof(object), new[] { typeof(object[]) }, typeof(EmitEngine).Module, true);
                 ILGenerator il = dm.GetILGenerator();
                 ConstructorInfo cons = type.GetConstructor(ptypes);
                 if (cons == null)
@@ -269,14 +269,7 @@ namespace BindingSample
                     il.Emit(OpCodes.Ldarg_0);
                     il.Emit(OpCodes.Ldc_I4, i);
                     il.Emit(OpCodes.Ldelem_Ref);
-                    if (ptypes[i].IsValueType)
-                    {
-                        il.Emit(OpCodes.Unbox_Any, ptypes[i]);
-                    }
-                    else
-                    {
-                        il.Emit(OpCodes.Castclass, ptypes[i]);
-                    }
+                    il.Emit(ptypes[i].IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, ptypes[i]);
                 }
                 il.Emit(OpCodes.Newobj, cons);
                 il.Emit(OpCodes.Ret);
@@ -334,11 +327,11 @@ namespace BindingSample
 
                 var setter = new DynamicMethod("__set_field_" + key, null, new[] { t, fieldInfo.FieldType }, typeof(EmitEngine), true);
 
-                var setterIL = setter.GetILGenerator();
-                setterIL.Emit(OpCodes.Ldarg_0);
-                setterIL.Emit(OpCodes.Ldarg_1);
-                setterIL.Emit(OpCodes.Stfld, fieldInfo);
-                setterIL.Emit(OpCodes.Ret);
+                var setterIl = setter.GetILGenerator();
+                setterIl.Emit(OpCodes.Ldarg_0);
+                setterIl.Emit(OpCodes.Ldarg_1);
+                setterIl.Emit(OpCodes.Stfld, fieldInfo);
+                setterIl.Emit(OpCodes.Ret);
 
                 fieldSetters.TryAdd(key, setter);
             }
@@ -439,13 +432,13 @@ namespace BindingSample
                 if (methodInfo == null)
                     throw new ArgumentException("There is no accessible " + methodName + " method found in " + t.FullName);
 
-                DynamicMethod dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new Type[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module);
+                var dynamicMethod = new DynamicMethod(string.Empty, typeof(object), new[] { typeof(object), typeof(object[]) }, methodInfo.DeclaringType.Module);
 
                 ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
 
                 ParameterInfo[] parameters = methodInfo.GetParameters();
 
-                Type[] paramTypes = new Type[parameters.Length];
+                var paramTypes = new Type[parameters.Length];
 
                 // copies the parameter types to an array
                 for (int i = 0; i < paramTypes.Length; i++)
@@ -456,7 +449,7 @@ namespace BindingSample
                         paramTypes[i] = parameters[i].ParameterType;
                 }
 
-                LocalBuilder[] locals = new LocalBuilder[paramTypes.Length];
+                var locals = new LocalBuilder[paramTypes.Length];
 
                 // generates a local variable for each parameter
                 for (int i = 0; i < paramTypes.Length; i++)
@@ -483,21 +476,11 @@ namespace BindingSample
                 // loads the parameters copied to the local variables into the stack
                 for (int i = 0; i < paramTypes.Length; i++)
                 {
-                    if (parameters[i].ParameterType.IsByRef)
-                        ilGenerator.Emit(OpCodes.Ldloca_S, locals[i]);
-                    else
-                        ilGenerator.Emit(OpCodes.Ldloc, locals[i]);
+                    ilGenerator.Emit(parameters[i].ParameterType.IsByRef ? OpCodes.Ldloca_S : OpCodes.Ldloc, locals[i]);
                 }
 
                 // calls the method
-                if (!methodInfo.IsStatic)
-                {
-                    ilGenerator.EmitCall(OpCodes.Callvirt, methodInfo, null);
-                }
-                else
-                {
-                    ilGenerator.EmitCall(OpCodes.Call, methodInfo, null);
-                }
+                ilGenerator.EmitCall(!methodInfo.IsStatic ? OpCodes.Callvirt : OpCodes.Call, methodInfo, null);
 
                 // creates code for handling the return value
                 if (methodInfo.ReturnType == typeof(void))
@@ -536,14 +519,7 @@ namespace BindingSample
         /// <param name="type">The type to cast.</param>
         private static void EmitCastToReference(ILGenerator ilGenerator, Type type)
         {
-            if (type.IsValueType)
-            {
-                ilGenerator.Emit(OpCodes.Unbox_Any, type);
-            }
-            else
-            {
-                ilGenerator.Emit(OpCodes.Castclass, type);
-            }
+            ilGenerator.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
         }
 
         /// <summary>Boxes a type if needed.</summary>

@@ -28,7 +28,7 @@ namespace BindingSample
     {
         #region Field
 
-        private static readonly Dictionary<int, WeakSource> weakSources = new Dictionary<int, WeakSource>();
+        private static readonly WeakKeyDictionary<object, WeakSource> weakSources = new WeakKeyDictionary<object, WeakSource>();
 
         #endregion
 
@@ -38,6 +38,12 @@ namespace BindingSample
                                                                               TTarget target, Expression<Func<TTarget, object>> targetExpression)
         {
             return SetPropertyBinding(source, sourceProperty.GetName(), target, targetExpression.GetName());
+        }
+
+        public static WeakNotifyBinding SetNotifyBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
+                                                                      TTarget target, Expression<Func<TTarget, object>> targetExpression)
+        {
+            return SetNotifyBinding(source, sourceProperty.GetName(), target, targetExpression.GetName());
         }
 
         public static WeakCollectionBinding SetCollectionBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
@@ -62,6 +68,12 @@ namespace BindingSample
         {
             var weakSource = GetWeakSource(source);
             return weakSource.SetBindng<WeakProperyBinding>(target, sourceProperty, targetProperty);
+        }
+
+        public static WeakNotifyBinding SetNotifyBinding(object source, string sourceProperty, object target, string targetProperty)
+        {
+            var weakSource = GetWeakSource(source);
+            return weakSource.SetBindng<WeakNotifyBinding>(target, sourceProperty, targetProperty);
         }
 
         public static WeakCollectionBinding SetCollectionBinding(object source, string sourceProperty, object target, string targetProperty, bool update = true)
@@ -90,6 +102,12 @@ namespace BindingSample
             weakSources.Remove(weakSource.GetHashCode());
         }
 
+        public static void ClearBinding<TSource, TTarget>(TSource source, Expression<Func<TSource, object>> sourceProperty,
+                                                                              TTarget target, Expression<Func<TTarget, object>> targetExpression)
+        {
+            ClearBinding(source, sourceProperty.GetName(), target, targetExpression.GetName());
+        }
+
         public static void ClearBinding(object source, string sourceProperty, object target, string targetProperty)
         {
             var weakSource = GetWeakSource(source);
@@ -107,22 +125,13 @@ namespace BindingSample
 
         private static WeakSource GetWeakSource(object source)
         {
-            int hashCode = source.GetHashCode();
-            if (weakSources.ContainsKey(hashCode))
+            if (weakSources.ContainsKey(source))
             {
-                return weakSources[hashCode];
+                return weakSources[source];
             }
 
-            //Clear dead weak source
-            var deadSources = weakSources.Where(item => !item.Value.IsAlive).Select(item => item.Key);
-            foreach (int deadSource in deadSources)
-            {
-                weakSources[deadSource].ClearBindings();
-                weakSources.Remove(deadSource);
-            }
-
-            WeakSource weakSource = new WeakSource(source);
-            weakSources.Add(source.GetHashCode(), weakSource);
+            var weakSource = new WeakSource(source);
+            weakSources.Add(source, weakSource);
             return weakSource;
         }
 
@@ -155,7 +164,7 @@ namespace BindingSample
 
             public override bool Equals(object obj)
             {
-                WeakEntry entry = (WeakEntry)obj;
+                var entry = (WeakEntry)obj;
                 return ((this._targetHashcode == entry._targetHashcode) &&
                     (this._sourceProperty == entry._sourceProperty) && (this._targetProperty == entry._targetProperty));
             }
@@ -171,7 +180,7 @@ namespace BindingSample
             }
         }
 
-        private class WeakSource : WeakReference
+        private class WeakSource : WeakReference, IDisposable
         {
             private readonly Dictionary<WeakEntry, WeakBinding> _bindings = new Dictionary<WeakEntry, WeakBinding>();
 
@@ -182,7 +191,7 @@ namespace BindingSample
 
             public T SetBindng<T>(object target, string sourceProperty, string targetProperty, object extraParameter = null) where T : WeakBinding
             {
-                WeakEntry entry = new WeakEntry(target.GetHashCode(), sourceProperty, targetProperty);
+                var entry = new WeakEntry(target.GetHashCode(), sourceProperty, targetProperty);
                 WeakBinding binding;
                 if (_bindings.ContainsKey(entry))
                 {
@@ -195,14 +204,8 @@ namespace BindingSample
                 }
                 else
                 {
-                    if (extraParameter != null)
-                    {
-                        binding = EmitEngine.CreateInstance<T>(Target, target, sourceProperty, targetProperty, extraParameter);
-                    }
-                    else
-                    {
-                        binding = EmitEngine.CreateInstance<T>(Target, target, sourceProperty, targetProperty);
-                    }
+                    binding = extraParameter != null ? EmitEngine.CreateInstance<T>(Target, target, sourceProperty, targetProperty, extraParameter)
+                                                     : EmitEngine.CreateInstance<T>(Target, target, sourceProperty, targetProperty);
                     _bindings.Add(entry, binding);
                 }
 
@@ -211,7 +214,7 @@ namespace BindingSample
 
             public void ClearBinding(object target, string sourceProperty, string targetProperty)
             {
-                WeakEntry entry = new WeakEntry(target.GetHashCode(), sourceProperty, targetProperty);
+                var entry = new WeakEntry(target.GetHashCode(), sourceProperty, targetProperty);
                 if (_bindings.ContainsKey(entry))
                 {
                     _bindings[entry].Clear();
@@ -226,6 +229,11 @@ namespace BindingSample
                     binding.Clear();
                 }
                 _bindings.Clear();
+            }
+
+            public void Dispose()
+            {
+                ClearBindings();
             }
         }
     }
@@ -242,7 +250,7 @@ namespace BindingSample
             {
                 _propertyObservation = new NotifyPropertyObservation(this, targetProperty.LastLeft("."));
 
-                INotifyPropertyChanged notifyProperty = target as INotifyPropertyChanged;
+                var notifyProperty = target as INotifyPropertyChanged;
                 if (notifyProperty == null)
                 {
                     throw new ArgumentException("The recursive binding only support INotifyPropertyChanged", "target");
@@ -265,7 +273,7 @@ namespace BindingSample
             {
                 if (_source != value)
                 {
-                    SourceChangedEventArgs changedEventArgs = new SourceChangedEventArgs(_source, value);
+                    var changedEventArgs = new SourceChangedEventArgs(_source, value);
                     _source = value;
                     OnSourceChanged(changedEventArgs);
                 }
@@ -307,7 +315,7 @@ namespace BindingSample
         {
             if (Source != null)
             {
-                SourceChangedEventArgs changedEventArgs = new SourceChangedEventArgs(null, Source);
+                var changedEventArgs = new SourceChangedEventArgs(null, Source);
                 OnSourceChanged(changedEventArgs);
             }
         }
@@ -451,7 +459,7 @@ namespace BindingSample
             EventName = eventName;
             SourceExpression = sourceExpression;
 
-            WeakBindSource ww = source as WeakBindSource;
+            var ww = source as WeakBindSource;
             if (ww != null)
             {
                 source = SourceExpression != null ? ww.GetPropertyValue(sourceExpression) : ww.Source;
@@ -770,9 +778,10 @@ namespace BindingSample
             {
                 SourceEventFilter = (o, args) =>
                 {
-                    if (args is PropertyChangedEventArgs)
+                    var eventArgs = args as PropertyChangedEventArgs;
+                    if (eventArgs != null)
                     {
-                        return ((PropertyChangedEventArgs)args).PropertyName == BindSource.Property;
+                        return eventArgs.PropertyName == BindSource.Property;
                     }
                     return true;
                 };
@@ -798,9 +807,10 @@ namespace BindingSample
             {
                 TargetEventFilter = (o, args) =>
                 {
-                    if (args is PropertyChangedEventArgs)
+                    var eventArgs = args as PropertyChangedEventArgs;
+                    if (eventArgs != null)
                     {
-                        return ((PropertyChangedEventArgs)args).PropertyName == BindTarget.Property;
+                        return eventArgs.PropertyName == BindTarget.Property;
                     }
                     return true;
                 };
@@ -933,7 +943,7 @@ namespace BindingSample
         }
 
         private object _parameter;
-        public object Parameter
+        public virtual object Parameter
         {
             get { return _parameter; }
             set
@@ -948,15 +958,42 @@ namespace BindingSample
         public BindingValueChangedCallback TargetChanged { get; set; }
     }
 
+    public class WeakNotifyBinding : WeakProperyBinding
+    {
+        public WeakNotifyBinding(object source, object target, string sourceProperty, string targetProperty)
+            : base(source, target, sourceProperty, targetProperty)
+        {
+
+        }
+
+        protected override void TargetToSource()
+        {
+            //Do nothing but only notification.
+            if (BindTarget.Source != null && BindTarget.Property != null && TargetChanged != null)
+            {
+                TargetChanged(BindTarget.Source, new BindingValueChangedEventArgs(null, null));
+            }
+        }
+
+        protected override void SourceToTarget()
+        {
+            //Do nothing but only notification.
+            if (BindSource.Source != null && BindSource.Property != null && SourceChanged != null)
+            {
+                SourceChanged(BindSource.Source, new BindingValueChangedEventArgs(null, null));
+            }
+        }
+    }
+
     public class WeakCollectionBinding : WeakProperyBinding
     {
         // A bool field indicate whether the constructor has been called, this is avoid call virtual method in Constructor of base class.
-        private bool isConstructorCalled;
+        private readonly bool _isConstructorCalled;
 
         public WeakCollectionBinding(object source, object target, string sourceProperty, string targetProperty, bool update = true)
             : base(source, target, sourceProperty, targetProperty)
         {
-            isConstructorCalled = true;
+            _isConstructorCalled = true;
             if (update)
             {
                 UpdateCollection();
@@ -1005,7 +1042,7 @@ namespace BindingSample
 
         private void UpdateCollection()
         {
-            if (!isConstructorCalled)
+            if (!_isConstructorCalled)
             {
                 return;
             }
@@ -1017,14 +1054,14 @@ namespace BindingSample
                 handleChange = !Handler.Clear(BindSource.Source, BindSource.Value);
             }
 
-            IList sources = BindSource.Value as IList;
+            var sources = BindSource.Value as IList;
             if (handleChange && sources != null)
             {
                 sources.Clear();
             }
 
             //2. Regenerate
-            IList targets = BindTarget.Value as IList;
+            var targets = BindTarget.Value as IList;
             if (targets != null)
             {
                 if (DataGenerator == null && Generator == null && Handler == null && targets.GetType() != sources.GetType())
@@ -1066,7 +1103,7 @@ namespace BindingSample
                 return false;
             }
 
-            NotifyCollectionChangedEventArgs notifyEventArgs = args as NotifyCollectionChangedEventArgs;
+            var notifyEventArgs = args as NotifyCollectionChangedEventArgs;
             if (notifyEventArgs == null)
             {
                 throw new NotSupportedException("Currently WeakCollectionBinding only support INotifyCollectionChanged");
@@ -1087,14 +1124,11 @@ namespace BindingSample
                     case NotifyCollectionChangedAction.Reset:
                         handleChange = !Handler.Clear(BindSource.Source, BindSource.Value);
                         break;
-                    default:
-                        break;
-
                 }
             }
             if (handleChange)
             {
-                IList list = BindSource.Value as IList;
+                var list = BindSource.Value as IList;
                 if (list == null)
                 {
                     throw new NotSupportedException("Currently WeakCollectionBinding only support IList or ICollectionHandler");
@@ -1121,9 +1155,6 @@ namespace BindingSample
                     case NotifyCollectionChangedAction.Reset:
                         list.Clear();
                         break;
-                    default:
-                        break;
-
                 }
             }
             return true;
@@ -1151,7 +1182,7 @@ namespace BindingSample
         }
 
         private object _parameter;
-        public object Parameter
+        public override object Parameter
         {
             get { return _parameter; }
             set { _parameter = value; UpdateCollection(); }
@@ -1245,7 +1276,7 @@ namespace BindingSample
                 return false;
             }
 
-            PropertyChangedEventArgs e = args as PropertyChangedEventArgs;
+            var e = args as PropertyChangedEventArgs;
             if (e != null && _watchProperties.Contains(e.PropertyName))
             {
                 RaiseCanExecuteChanged();
@@ -1364,7 +1395,7 @@ namespace BindingSample
                 return null;
             }
 
-            List<object> ps = new List<object>();
+            var ps = new List<object>();
             foreach (var parameter in bindMethodParameters)
             {
                 object obj;
@@ -1674,5 +1705,142 @@ namespace BindingSample
             }
             return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
+    }
+
+    public class WeakKeyDictionary<TKey, TValue> where TKey : class
+    {
+        #region Field
+
+        private readonly List<WeakReference> _keys = new List<WeakReference>();
+        private readonly List<TValue> _values = new List<TValue>();
+
+        #endregion
+
+        #region Property
+
+        public IList Keys
+        {
+            get { return _keys; }
+        }
+        public IList<TValue> Values
+        {
+            get { return _values; }
+        }
+
+        public TValue this[TKey key]
+        {
+            get
+            {
+                int index = FindEntry(key);
+                if (index >= 0)
+                    return _values[index];
+                throw new KeyNotFoundException();
+            }
+            set
+            {
+                this.Insert(key, value, false);
+            }
+        }
+
+        public int Count
+        {
+            get { return _keys.Count; }
+        }
+
+        #endregion
+
+        #region Method
+
+        public void Add(TKey key, TValue value)
+        {
+            Insert(key, value, true);
+        }
+
+        public bool Remove(TKey key)
+        {
+            if (key == null)
+                throw new ArgumentException();
+            int index = this.FindEntry(key);
+            if (index >= 0)
+            {
+                _keys.RemoveAt(index);
+
+                //Dispose the value
+                var dispose = _values[index] as IDisposable;
+                if (dispose != null)
+                    dispose.Dispose();
+                _values.RemoveAt(index);
+                return true;
+            }
+            return false;
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            return FindEntry(key) >= 0;
+        }
+
+        public bool ContainsValue(TValue value)
+        {
+            return _values.IndexOf(value) >= 0;
+        }
+
+        public void Clear()
+        {
+            _keys.Clear();
+            _values.Clear();
+        }
+
+        public bool TryGetValue(TKey key, out TValue value)
+        {
+            int index = FindEntry(key);
+            if (index >= 0)
+            {
+                value = _values[index];
+                return true;
+            }
+            value = default(TValue);
+            return false;
+        }
+
+        private int FindEntry(TKey key)
+        {
+            int result = -1;
+            for (int i = Count - 1; i >= 0; i--)
+            {
+                var currentKey = _keys[i];
+                var target = (TKey)currentKey.Target;
+                if (target == null)
+                {
+                    _keys.RemoveAt(i);
+                    _values.RemoveAt(i);
+                    result--;
+                }
+                else
+                {
+                    if (Equals(target, key))
+                        result = i;
+                }
+            }
+            return result < 0 ? -1 : result;
+        }
+
+        private void Insert(TKey key, TValue value, bool add)
+        {
+            if (key == null)
+                throw new ArgumentException();
+            int index = this.FindEntry(key);
+            if (index >= 0)
+            {
+                if (add)
+                    throw new ArgumentException();
+                _values[index] = value;
+                return;
+            }
+            _keys.Add(new WeakReference(key));
+            _values.Add(value);
+        }
+
+        #endregion
     }
 }

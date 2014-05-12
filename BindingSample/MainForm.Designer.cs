@@ -36,7 +36,10 @@
             this.addBtn = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.personListBox = new BindingSample.RefreshListBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.wpfHost = new System.Windows.Forms.Integration.ElementHost();
+            this.wpfControl1 = new BindingSample.WPFControl();
             this.button1 = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.viewModelLabel = new System.Windows.Forms.Label();
@@ -47,9 +50,6 @@
             this.bindStatusLabel = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.keyTextBox = new System.Windows.Forms.TextBox();
-            this.wpfHost = new System.Windows.Forms.Integration.ElementHost();
-            this.wpfControl1 = new BindingSample.WPFControl();
-            this.personListBox = new BindingSample.RefreshListBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -64,25 +64,25 @@
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.personListBox);
-            this.groupBox1.Location = new System.Drawing.Point(36, 21);
+            this.groupBox1.Location = new System.Drawing.Point(36, 19);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(250, 275);
+            this.groupBox1.Size = new System.Drawing.Size(250, 254);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "WinFrom";
             // 
             // nameTextbox
             // 
-            this.nameTextbox.Location = new System.Drawing.Point(87, 157);
+            this.nameTextbox.Location = new System.Drawing.Point(87, 145);
             this.nameTextbox.Name = "nameTextbox";
-            this.nameTextbox.Size = new System.Drawing.Size(100, 20);
+            this.nameTextbox.Size = new System.Drawing.Size(100, 21);
             this.nameTextbox.TabIndex = 3;
             // 
             // clearBtn
             // 
-            this.clearBtn.Location = new System.Drawing.Point(169, 228);
+            this.clearBtn.Location = new System.Drawing.Point(169, 210);
             this.clearBtn.Name = "clearBtn";
-            this.clearBtn.Size = new System.Drawing.Size(75, 23);
+            this.clearBtn.Size = new System.Drawing.Size(75, 21);
             this.clearBtn.TabIndex = 1;
             this.clearBtn.Text = "Clear";
             this.clearBtn.UseVisualStyleBackColor = true;
@@ -90,26 +90,26 @@
             // countText
             // 
             this.countText.AutoSize = true;
-            this.countText.Location = new System.Drawing.Point(95, 186);
+            this.countText.Location = new System.Drawing.Point(95, 172);
             this.countText.Name = "countText";
-            this.countText.Size = new System.Drawing.Size(35, 13);
+            this.countText.Size = new System.Drawing.Size(41, 12);
             this.countText.TabIndex = 2;
             this.countText.Text = "label2";
             // 
             // removeBtn
             // 
-            this.removeBtn.Location = new System.Drawing.Point(88, 228);
+            this.removeBtn.Location = new System.Drawing.Point(88, 210);
             this.removeBtn.Name = "removeBtn";
-            this.removeBtn.Size = new System.Drawing.Size(75, 23);
+            this.removeBtn.Size = new System.Drawing.Size(75, 21);
             this.removeBtn.TabIndex = 1;
             this.removeBtn.Text = "Remove";
             this.removeBtn.UseVisualStyleBackColor = true;
             // 
             // addBtn
             // 
-            this.addBtn.Location = new System.Drawing.Point(7, 228);
+            this.addBtn.Location = new System.Drawing.Point(7, 210);
             this.addBtn.Name = "addBtn";
-            this.addBtn.Size = new System.Drawing.Size(75, 23);
+            this.addBtn.Size = new System.Drawing.Size(75, 21);
             this.addBtn.TabIndex = 1;
             this.addBtn.Text = "Add";
             this.addBtn.UseVisualStyleBackColor = true;
@@ -117,36 +117,54 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 186);
+            this.label2.Location = new System.Drawing.Point(16, 172);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(41, 13);
+            this.label2.Size = new System.Drawing.Size(47, 12);
             this.label2.TabIndex = 1;
             this.label2.Text = "Count :";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 157);
+            this.label1.Location = new System.Drawing.Point(16, 145);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(47, 13);
+            this.label1.Size = new System.Drawing.Size(59, 12);
             this.label1.TabIndex = 1;
             this.label1.Text = "Current :";
+            // 
+            // personListBox
+            // 
+            this.personListBox.FormattingEnabled = true;
+            this.personListBox.ItemHeight = 12;
+            this.personListBox.Location = new System.Drawing.Point(19, 18);
+            this.personListBox.Name = "personListBox";
+            this.personListBox.Size = new System.Drawing.Size(204, 100);
+            this.personListBox.TabIndex = 0;
             // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.wpfHost);
-            this.groupBox2.Location = new System.Drawing.Point(326, 21);
+            this.groupBox2.Location = new System.Drawing.Point(326, 19);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(251, 275);
+            this.groupBox2.Size = new System.Drawing.Size(250, 254);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "WPF";
             // 
+            // wpfHost
+            // 
+            this.wpfHost.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.wpfHost.Location = new System.Drawing.Point(3, 17);
+            this.wpfHost.Name = "wpfHost";
+            this.wpfHost.Size = new System.Drawing.Size(244, 234);
+            this.wpfHost.TabIndex = 0;
+            this.wpfHost.Child = this.wpfControl1;
+            // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(207, 327);
+            this.button1.Location = new System.Drawing.Point(207, 302);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(113, 23);
+            this.button1.Size = new System.Drawing.Size(113, 21);
             this.button1.TabIndex = 1;
             this.button1.Text = "Change ViewModel";
             this.button1.UseVisualStyleBackColor = true;
@@ -155,25 +173,25 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(40, 388);
+            this.label3.Location = new System.Drawing.Point(40, 358);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(115, 13);
+            this.label3.Size = new System.Drawing.Size(125, 12);
             this.label3.TabIndex = 2;
             this.label3.Text = "ViewModel hashcode :";
             // 
             // viewModelLabel
             // 
             this.viewModelLabel.AutoSize = true;
-            this.viewModelLabel.Location = new System.Drawing.Point(166, 388);
+            this.viewModelLabel.Location = new System.Drawing.Point(166, 358);
             this.viewModelLabel.Name = "viewModelLabel";
-            this.viewModelLabel.Size = new System.Drawing.Size(0, 13);
+            this.viewModelLabel.Size = new System.Drawing.Size(0, 12);
             this.viewModelLabel.TabIndex = 3;
             // 
             // setBindingBtn
             // 
-            this.setBindingBtn.Location = new System.Drawing.Point(36, 327);
+            this.setBindingBtn.Location = new System.Drawing.Point(36, 302);
             this.setBindingBtn.Name = "setBindingBtn";
-            this.setBindingBtn.Size = new System.Drawing.Size(82, 23);
+            this.setBindingBtn.Size = new System.Drawing.Size(82, 21);
             this.setBindingBtn.TabIndex = 4;
             this.setBindingBtn.Text = "Set Binding";
             this.setBindingBtn.UseVisualStyleBackColor = true;
@@ -181,9 +199,9 @@
             // 
             // clearBindingbtn
             // 
-            this.clearBindingbtn.Location = new System.Drawing.Point(124, 327);
+            this.clearBindingbtn.Location = new System.Drawing.Point(124, 302);
             this.clearBindingbtn.Name = "clearBindingbtn";
-            this.clearBindingbtn.Size = new System.Drawing.Size(77, 23);
+            this.clearBindingbtn.Size = new System.Drawing.Size(77, 21);
             this.clearBindingbtn.TabIndex = 4;
             this.clearBindingbtn.Text = "Clear Binding";
             this.clearBindingbtn.UseVisualStyleBackColor = true;
@@ -191,9 +209,9 @@
             // 
             // gcCollectbtn
             // 
-            this.gcCollectbtn.Location = new System.Drawing.Point(329, 327);
+            this.gcCollectbtn.Location = new System.Drawing.Point(329, 302);
             this.gcCollectbtn.Name = "gcCollectbtn";
-            this.gcCollectbtn.Size = new System.Drawing.Size(90, 23);
+            this.gcCollectbtn.Size = new System.Drawing.Size(90, 21);
             this.gcCollectbtn.TabIndex = 5;
             this.gcCollectbtn.Text = "GC Collect";
             this.gcCollectbtn.UseVisualStyleBackColor = true;
@@ -202,9 +220,9 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(88, 363);
+            this.label4.Location = new System.Drawing.Point(88, 335);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(67, 13);
+            this.label4.Size = new System.Drawing.Size(83, 12);
             this.label4.TabIndex = 2;
             this.label4.Text = "Bind Status :";
             // 
@@ -212,7 +230,7 @@
             // 
             this.bindStatusLabel.AutoSize = true;
             this.bindStatusLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.bindStatusLabel.Location = new System.Drawing.Point(166, 363);
+            this.bindStatusLabel.Location = new System.Drawing.Point(166, 335);
             this.bindStatusLabel.Name = "bindStatusLabel";
             this.bindStatusLabel.Size = new System.Drawing.Size(0, 13);
             this.bindStatusLabel.TabIndex = 3;
@@ -220,42 +238,25 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(326, 363);
+            this.label5.Location = new System.Drawing.Point(266, 335);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(197, 13);
+            this.label5.Size = new System.Drawing.Size(257, 12);
             this.label5.TabIndex = 2;
             this.label5.Text = "Current Key (Nullabe binding, default 2) :";
             // 
             // keyTextBox
             // 
             this.keyTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.keyTextBox.Location = new System.Drawing.Point(529, 360);
+            this.keyTextBox.Location = new System.Drawing.Point(529, 332);
             this.keyTextBox.Name = "keyTextBox";
             this.keyTextBox.Size = new System.Drawing.Size(48, 20);
             this.keyTextBox.TabIndex = 3;
             // 
-            // wpfHost
-            // 
-            this.wpfHost.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.wpfHost.Location = new System.Drawing.Point(3, 16);
-            this.wpfHost.Name = "wpfHost";
-            this.wpfHost.Size = new System.Drawing.Size(245, 256);
-            this.wpfHost.TabIndex = 0;
-            this.wpfHost.Child = this.wpfControl1;
-            // 
-            // personListBox
-            // 
-            this.personListBox.FormattingEnabled = true;
-            this.personListBox.Location = new System.Drawing.Point(19, 19);
-            this.personListBox.Name = "personListBox";
-            this.personListBox.Size = new System.Drawing.Size(204, 108);
-            this.personListBox.TabIndex = 0;
-            // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(618, 426);
+            this.ClientSize = new System.Drawing.Size(618, 393);
             this.Controls.Add(this.clearBindingbtn);
             this.Controls.Add(this.gcCollectbtn);
             this.Controls.Add(this.setBindingBtn);
