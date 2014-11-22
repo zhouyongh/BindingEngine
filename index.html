@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Bindingengine : The binding Engine that support Binding for all .net environment : WinForm, WPF, Web, Mono, Xamarin, etc.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Bindingengine</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/zhouyongh/BindingEngine">View on GitHub</a>
+
+          <h1 id="project_title">Bindingengine</h1>
+          <h2 id="project_tagline">The binding Engine that support Binding for all .net environment : WinForm, WPF, Web, Mono, Xamarin, etc.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/zhouyongh/BindingEngine/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/zhouyongh/BindingEngine/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p><strong>BindingEngine</strong><br>
+===========    </p>
+
+<p>Custom BindingEngine that support all .net environment : Winform, WPF, Web, Mono, Xamarin. etc <br>
+The goal of BindingEngine is making your ViewModel everywhere.   </p>
+
+<p><strong>Will add the documentation later</strong> </p>
+
+<p>The original implementation of Winform binding is heavy and not powerful enough than WPF.<br>
+It does not support ICommand, Recursive Binding, etc.   </p>
+
+<p>The binding can be analyzed for 3 parts:<br>
+<strong>&gt;1. When</strong><br>
+   What trigger the binding update? Usually the binding is updated via INotifyPropertyChanged's PropertyChanged event in ViewModel scenario.<br>
+<strong>&gt;2. Direction</strong><br>
+   Direction of the Data Flow. OneWay, TwoWay or OneWayToSource?<br>
+<strong>&gt;3. Update</strong><br>
+   After binding is triggered, the detail update strategy for different binding.
+   The binding can work on pure Property, Collection, ICommand and Method.</p>
+
+<p>The use of BindingEngine:    </p>
+
+<pre><code>BindingEngine.SetXXXBinding( source, sourceProp, target, targetProp )</code></pre>, XXX can be Property, Collection, Command and Method.
+
+<pre><code>BindingEngine.SetPropertyBinding(nameTextbox, i =&gt; i.Text, DataWarehouse.Instance, o =&gt; o.MainViewModel.CurrentPerson.Name)    
+             .SetMode(BindMode.TwoWay)    
+             .AttachSourceEvent("TextChanged");</code></pre>
+
+<p>SetPropertyBinding indicates it's a Property Binding;<br>
+SetMode indicates it's a TwoWay binding;<br>
+AttactSourceEvent indicates the binding is triggered when TextChanged event occured on the source--&gt;nameTextbox.    </p>
+
+<pre><code>BindingEngine.SetMethodBinding(viewModelLabel, i =&gt; i.Text, DataWarehouse.Instance, o =&gt; o.MainViewModel)    
+             .AttachTargetMethod(o =&gt; o.MainViewModel, "GetHashCode");</code></pre>    
+
+<p>This binding means the Label--&gt;viewModelLabel.Text is bind to the MainViewModel GetHashCode method.  </p>
+
+<p>Have fun with it and appreciate for suggestion. ^_^ </p>
+
+<p><strong>yohan zhou</strong><br>
+mailto:<a href="mailto:yohan.zhou@gmail.com">yohan.zhou@gmail.com</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Bindingengine maintained by <a href="https://github.com/zhouyongh">zhouyongh</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
