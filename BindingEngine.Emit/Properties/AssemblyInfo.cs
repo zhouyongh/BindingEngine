@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BindingSample")]
+[assembly: AssemblyTitle("BindingEngine.Emit")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Illusion")]
-[assembly: AssemblyProduct("BindingSample")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("BindingEngine.Emit")]
 [assembly: AssemblyCopyright("Copyright © yohan zhou 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,13 +20,15 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a8f936c7-aa22-4835-9aab-9b78604853ee")]
+[assembly: Guid("43c747ea-4fa5-4aa4-b1ee-b5607564b59c")]
 
 // Version information for an assembly consists of the following four values:
+//
 //      Major Version
 //      Minor Version 
 //      Build Number
 //      Revision
+//
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
