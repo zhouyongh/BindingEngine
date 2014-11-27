@@ -529,15 +529,15 @@ namespace Illusion.Utility
 
                 if (dataGenerator != null)
                 {
-                    list.Add(dataGenerator.Generate(item, parameter));
+                    list.Insert(index, dataGenerator.Generate(item, parameter));
                 }
                 else if (generator != null)
                 {
-                    list.Add(generator(item, parameter));
+                    list.Insert(index, generator(item, parameter));
                 }
                 else
                 {
-                    list.Add(item);
+                    list.Insert(index, item);
                 }
             }
         }
