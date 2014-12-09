@@ -307,6 +307,7 @@ namespace Illusion.Utility
         {
             // Set default SourceMode to Property
             this.SetTargetBindMode(SourceMode.Property);
+            this.SetSourceBindMode(SourceMode.Property);
 
             return base.Initialize<T>(isActivate);
         }
@@ -334,15 +335,7 @@ namespace Illusion.Utility
                 return false;
             }
 
-            if (this.sourceInvoker != null)
-            {
-                if (this.sourceCanInvoker != null && !this.sourceCanInvoker.CanInvoke())
-                {
-                    return false;
-                }
-
-                this.sourceInvoker.Invoke();
-            }
+            this.InvokeSourceMethod();
 
             return true;
         }
@@ -366,17 +359,67 @@ namespace Illusion.Utility
                 return false;
             }
 
+            this.InvokeTargetMethod();
+
+            return true;
+        }
+
+        /// <summary>
+        ///     Updates the target value.
+        /// </summary>
+        /// <param name="args">
+        ///     The <see cref="EventArgs"/> instance containing the event data.
+        /// </param>
+        protected override void UpdateTargetValue(EventArgs args)
+        {
+            base.UpdateTargetValue(args);
+
+            this.InvokeTargetMethod();
+        }
+
+        /// <summary>
+        ///     Updates the source value.
+        /// </summary>
+        /// <param name="args">
+        ///     The <see cref="EventArgs"/> instance containing the event data.
+        /// </param>
+        protected override void UpdateSourceValue(EventArgs args)
+        {
+            base.UpdateSourceValue(args);
+
+            this.InvokeSourceMethod();
+        }
+
+        /// <summary>
+        ///     Invokes the target method.
+        /// </summary>
+        private void InvokeTargetMethod()
+        {
             if (this.targetInvoker != null)
             {
                 if (this.targetCanInvoker != null && !this.targetCanInvoker.CanInvoke())
                 {
-                    return false;
+                    return;
                 }
 
                 this.targetInvoker.Invoke();
             }
+        }
 
-            return true;
+        /// <summary>
+        ///     Invokes the source method.
+        /// </summary>
+        private void InvokeSourceMethod()
+        {
+            if (this.sourceInvoker != null)
+            {
+                if (this.sourceCanInvoker != null && !this.sourceCanInvoker.CanInvoke())
+                {
+                    return;
+                }
+
+                this.sourceInvoker.Invoke();
+            }
         }
 
         #endregion

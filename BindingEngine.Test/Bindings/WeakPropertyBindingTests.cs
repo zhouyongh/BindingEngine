@@ -197,7 +197,7 @@ namespace Illusion.Utility.Tests
         }
 
         [TestMethod]
-        public void Test_WeakPropertyBinding_Index_Expression()
+        public void Test_WeakPropertyBinding_Index_Expression_Int()
         {
             var view = new TestView();
             var viewModel = new TestViewModel();
@@ -231,6 +231,42 @@ namespace Illusion.Utility.Tests
 
             var t42 = new TestViewModel4();
             testViewModels[1] = t42;
+            Assert.AreEqual(null, view.Text1);
+        }
+
+        [TestMethod]
+        public void Test_WeakPropertyBinding_Index_Expression_String()
+        {
+            var view = new TestView();
+            var viewModel = new TestViewModel();
+
+            // 1. OneWay binding.
+            BindingEngine.SetPropertyBinding(view, v => v.Text1, viewModel, vm => vm.TestViewModel2.TestViewModel3.TestViewModel4s["12"].Name)
+                .Initialize<WeakPropertyBinding>().OfType<WeakPropertyBinding>()
+                .SetMode(BindMode.TwoWay)
+                .AttachTargetEvent("TestViewEvent");
+
+            var viewModel2 = new TestViewModel2();
+            viewModel.TestViewModel2 = viewModel2;
+
+            var viewModel3 = new TestViewModel3();
+            viewModel2.TestViewModel3 = viewModel3;
+
+            var testViewModels = new ObservableDictionary<string, TestViewModel4>();
+            viewModel3.TestViewModel4s = testViewModels;
+
+            var t4 = new TestViewModel4();
+            testViewModels.Add("12", t4);
+            t4.Name = Name1;
+
+            Assert.AreEqual(Name1, view.Text1);
+
+            view.Text1 = Name2;
+            view.RaiseTestViewEvent();
+            Assert.AreEqual(Name2, t4.Name);
+
+            var t42 = new TestViewModel4();
+            testViewModels["12"] = t42;
             Assert.AreEqual(null, view.Text1);
         }
 

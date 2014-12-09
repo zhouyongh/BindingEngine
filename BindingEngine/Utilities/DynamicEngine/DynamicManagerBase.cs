@@ -121,13 +121,19 @@ namespace Illusion.Utility
                     }
                 }
 
-                if (methodInfo == null && throwException)
+                if (methodInfo == null)
                 {
-                    throw new MissingMemberException(
-                        "There is no accessible " + methodName + " method found in " + type.FullName);
+                    if (throwException)
+                    {
+                        throw new MissingMemberException(
+                            "There is no accessible " + methodName + " method found in " + type.FullName);
+                    }
+                }
+                else
+                {
+                    this.methodInfos.Add(key, methodInfo);
                 }
 
-                this.methodInfos.Add(key, methodInfo);
                 return methodInfo;
             }
 
@@ -519,7 +525,7 @@ namespace Illusion.Utility
             var extensionIndex = isExtensionMethod ? 1 : 0;
 
             var methods =
-                type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy)
                     .Where(
                         item =>
                         (item.Name.Equals(methodName) || item.Name.Right(".").Equals(methodName))

@@ -6,6 +6,8 @@ using System.Windows.Input;
 
 namespace BindingEngine.Test.Helpers
 {
+    using Illusion.Utility.Tests;
+
     public class TestViewModel : ViewModelBase
     {
         private ICommand _addAgeCommand;
@@ -201,6 +203,8 @@ namespace BindingEngine.Test.Helpers
         private ObservableCollection<TestViewModel2> _testViewModelCollection;
         private IList<TestViewModel4> _testViewModels;
 
+        private ObservableDictionary<string, TestViewModel4> _testViewModel4s; 
+
         public TestViewModel3()
         {
             _changedNameCommand = new DelegateCommand<string>(o => { Name = o; }, o => true);
@@ -264,6 +268,16 @@ namespace BindingEngine.Test.Helpers
             {
                 _testViewModels = value;
                 NotifyPropertyChanged("TestViewModels");
+            }
+        }
+
+        public ObservableDictionary<string, TestViewModel4> TestViewModel4s
+        {
+            get { return _testViewModel4s; }
+            set
+            {
+                _testViewModel4s = value;
+                NotifyPropertyChanged("TestViewModel4s");
             }
         }
 

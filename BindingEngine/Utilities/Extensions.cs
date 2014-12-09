@@ -93,7 +93,7 @@ namespace Illusion.Utility
                 return null;
             }
 
-            string result;
+            string result = null;
 
             if (expression is LambdaExpression)
             {
@@ -140,13 +140,17 @@ namespace Illusion.Utility
                 if (memberExpression.ToString().StartsWith("value("))
                 {
                     // Need to compile
-                    result = Expression.Lambda(memberExpression).Compile().DynamicInvoke().ToString();
+                    var compileValue = Expression.Lambda(memberExpression).Compile().DynamicInvoke();
+                    if (compileValue != null)
+                    {
+                        result = compileValue.ToString();
+                    }
+
+                    result = string.Format("{0}.{1}", result ?? "item", memberExpression.Member.Name);
                 }
                 else
                 {
-                    result = GetName(
-                        ((MemberExpression)expression).Expression,
-                        "{0}." + ((MemberExpression)expression).Member.Name);
+                    result = GetName(memberExpression.Expression, "{0}." + memberExpression.Member.Name);
                 }
             }
             else
