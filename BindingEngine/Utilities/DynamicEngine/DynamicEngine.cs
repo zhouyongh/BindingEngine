@@ -34,37 +34,8 @@ namespace Illusion.Utility
     using System.Reflection;
 
     /// <summary>
-    ///     A dynamic engine used to dynamically create and access objects.
-    ///     <remarks>
-    ///         It uses <see cref="System.Reflection" /> to generate the access methods, holds all dynamic methods in its
-    ///         cache for next use, it's thread safe.
-    ///     </remarks>
-    ///     <example>
-    ///         public class TestObject
-    ///         {
-    ///             public string Name { get; set; }
-    ///             public void UpdateName(string name)
-    ///             {
-    ///                 Name = name;
-    ///             }
-    ///         }
-    ///         1.Access Property
-    ///         TestObject testObj = new TestObject();
-    ///         testObj.Name = "1"; &lt;-- equals to:  --&gt; DynamicEngine.SetProperty(testObj, "Name", "1");
-    ///         2.CreateInstance
-    ///         TestObject testObj = new TestObject();   &lt;-- equals to:  --&gt; TestObject testObj =
-    ///         DynamicEngine.CreateInstance&lt;TestObject&gt;();
-    ///         3.Invoke Method
-    ///         TestObject testObj = new TestObject();
-    ///         testObj.UpdateName("new"); &lt;-- equals to:  --&gt; DynamicEngine.InvokeMethod(testObj, "UpdateName", "new");
-    ///     </example>
-    ///     <remarks>
-    ///         reference from Manuel Abadia:
-    ///         http://www.manuelabadia.com/blog/PermaLink,guid,dc72b235-1381-4c91-8706-e36216f49b94.aspx
-    ///     </remarks>
+    ///     A dynamic engine used to dynamically create and access objects, it actually the wrapper class for <see cref="IDynamicManager"/> to provide quick access.
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", 
-        Justification = "Reviewed. Suppression is OK here.")]
     public static class DynamicEngine
     {
         #region Static Fields

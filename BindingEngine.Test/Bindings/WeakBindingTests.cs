@@ -315,10 +315,10 @@ namespace Illusion.Utility.Tests
             TestView.RaiseStaticTestViewEvent();
             Assert.AreEqual(viewModel.Name, Name2);
 
-            BindSource source = binding.GetBindSource(viewModel, "Name");
-            Assert.AreEqual(binding.BindTarget, source);
+            BindContext context = binding.GetBindContext(viewModel, "Name");
+            Assert.AreEqual(binding.BindTarget, context);
 
-            BindSource source2 = binding.GetBindSource(view, "Text1");
+            BindContext source2 = binding.GetBindContext(view, "Text1");
             Assert.AreEqual(binding.BindSource, source2);
         }
 
@@ -366,7 +366,7 @@ namespace Illusion.Utility.Tests
             Assert.AreEqual(typeof(int), targetType);
             Assert.AreEqual(CultureInfo.CurrentUICulture, cultureInfo);
 
-            if(value.Equals("0") || parameter == null)
+            if (value == null || value.Equals("0") || parameter == null)
             {
                 return 0;
             }
@@ -387,7 +387,7 @@ namespace Illusion.Utility.Tests
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo cultureInfo)
         {
-            if(value.Equals("0"))
+            if (value == null || value.Equals("0"))
             {
                 return 0;
             }

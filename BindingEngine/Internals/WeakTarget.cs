@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="WeakSource.cs" company="Illusion">
+// <copyright file="WeakTarget.cs" company="Illusion">
 //   The MIT License (MIT)
 //      
 //   Copyright (c) 2014 yohan zhou 
@@ -63,6 +63,36 @@ namespace Illusion.Utility
         #endregion
 
         #region Public Methods and Operators
+
+        /// <summary>
+        ///     Get the binding.
+        /// </summary>
+        /// <typeparam name="T">
+        ///     The concrete <see cref="WeakBinding"/> to return.
+        /// </typeparam>        
+        /// <param name="targetProperty">
+        ///     The target property.
+        /// </param>
+        /// <param name="source">
+        ///     The source.
+        /// </param>
+        /// <param name="sourceProperty">
+        ///     The source property.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="T"/>.
+        /// </returns>
+        public T GetBinding<T>(string targetProperty, object source, string sourceProperty)
+            where T : WeakBinding
+        {
+            var entry = new WeakEntry(targetProperty, source, sourceProperty);
+            if (this.bindings.ContainsKey(entry))
+            {
+                return this.bindings[entry] as T;
+            }
+
+            return null;
+        }
 
         /// <summary>
         ///     Clears the binding.
@@ -134,7 +164,7 @@ namespace Illusion.Utility
         ///     The source property.
         /// </param>
         /// <param name="activate">
-        ///     if set to <c>true</c> [activate].
+        ///     if set to <c>true</c> activate.
         /// </param>
         /// <returns>
         ///     The <see cref="T"/>.
@@ -157,7 +187,7 @@ namespace Illusion.Utility
                             "The new {0} is not compatible with the existing {1}, ", 
                             typeof(T), 
                             binding.GetType())
-                        + "please clear the binding and rebind or update WeakSource.SetBinding method to clear the existing binding first");
+                        + "please clear the binding and rebind or update WeakTarget.SetBinding method to clear the existing binding first");
                 }
 
                 binding.Update(targetProperty, source, sourceProperty);

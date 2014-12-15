@@ -45,7 +45,7 @@ namespace Illusion.Utility
         /// <param name="source">
         ///     The source.
         /// </param>
-        public BindData(BindSource target, BindSource source)
+        public BindData(BindContext target, BindContext source)
         {
             this.Target = target;
             this.Source = source;
@@ -58,12 +58,12 @@ namespace Illusion.Utility
         /// <summary>
         ///     Gets or sets the target.
         /// </summary>
-        public BindSource Target { get; set; }
+        public BindContext Target { get; set; }
 
         /// <summary>
         ///     Gets or sets the source.
         /// </summary>
-        public BindSource Source { get; set; }
+        public BindContext Source { get; set; }
 
         #endregion
     }

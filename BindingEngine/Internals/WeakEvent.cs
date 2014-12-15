@@ -24,7 +24,7 @@
 //   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // </copyright>
 // <summary>
-//   The weak event.
+//   Represents a weak event, it holds the <see cref="WeakReference"/> for the specific instance.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 namespace Illusion.Utility
@@ -137,7 +137,7 @@ namespace Illusion.Utility
         /// <summary>
         ///     Gets the data.
         /// </summary>
-        internal BindSource Data { get; private set; }
+        internal BindContext Data { get; private set; }
 
         #endregion
 
@@ -168,13 +168,13 @@ namespace Illusion.Utility
             string handlerName,
             WeakEventFilterHandler filter = null)
         {
-            this.AttachEvent(new BindSource(source, sourceProperty), eventName, handlerName, filter);
+            this.AttachEvent(new BindContext(source, sourceProperty), eventName, handlerName, filter);
         }
 
         /// <summary>
         ///     Attaches the specific event.
         /// </summary>
-        /// <param name="source">
+        /// <param name="context">
         ///     The source.
         /// </param>
         /// <param name="eventName">
@@ -187,21 +187,21 @@ namespace Illusion.Utility
         ///     The filter.
         /// </param>
         public void AttachEvent(
-            BindSource source,
+            BindContext context,
             string eventName,
             string handlerName,
             WeakEventFilterHandler filter = null)
         {
             this.DetachEvent();
 
-            source.SourceChanged += this.OnSourceChanged;
+            context.SourceChanged += this.OnSourceChanged;
 
             this.EventName = eventName;
             this.HandlerName = handlerName;
 
-            this.Data = source;
+            this.Data = context;
 
-            object value = this.Data.GeTTarget();
+            object value = this.Data.GetTarget();
             if (value != null)
             {
                 this.targetType = value.GetType();
@@ -344,6 +344,11 @@ namespace Illusion.Utility
         /// <param name="e">The <see cref="SourceChangedEventArgs"/> instance containing the event data.</param>
         private void OnSourceChanged(object sender, SourceChangedEventArgs e)
         {
+            if (e.OldSource == e.NewSource)
+            {
+                return;
+            }
+
             this.DetachEvent();
             this.AttachEvent(
                 this.Data,

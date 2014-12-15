@@ -40,7 +40,7 @@ namespace Illusion.Utility
     ///     Concrete <see cref="IDynamicManager" /> that use <see cref="System.Reflection.Emit" /> to create and access object.
     /// </summary>
     /// <remarks>
-    ///     It hold the <see cref="System.Reflection.Emit.DynamicMethod" /> in the cache, use ClearCaches method to clear it.
+    ///     It hold the delegates in the cache, use ClearCache method to clear it.
     /// </remarks>
     public class EmitManager : DynamicManagerBase
     {

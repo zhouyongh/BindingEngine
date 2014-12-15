@@ -15,7 +15,7 @@
     /// </summary>
     public partial class MainForm : Form
     {
-        private static BindingManager WinformBinding = new BindingManager();
+        internal static BindingManager WinformBinding = new BindingManager();
 
         #region Constructors and Destructors
 
@@ -33,9 +33,8 @@
             this.dataGrid.Columns[2].ValueType = typeof(string);
 
             DynamicEngine.SetBindingManager(new EmitManager());
-            this.SetGlobalBinding();
 
-            this.SetBinding();
+            this.SetGlobalBinding();
         }
 
         public System.Windows.Controls.TabControl WPFTabControl
@@ -81,23 +80,6 @@
                          .SetTargetPropertySetter(this.UpdateViewModelLabelText);
         }
 
-        private void UpdateViewModelLabelText(BindData data, object o)
-        {
-            var index = (int)o;
-            switch (index)
-            {
-                case 0:
-                    data.Target.Value = ((DataWarehouse)data.Source.Source).ControlViewModel1.GetHashCode().ToStringWithoutException();
-                    break;
-                case 1:
-                    data.Target.Value = ((DataWarehouse)data.Source.Source).ControlViewModel2.GetHashCode().ToStringWithoutException();
-                    break;
-                default:
-                    data.Target.Value = "null";
-                    break;
-            }
-        }
-
         public void UpdateWinformBinding(bool bind)
         {
             if (bind)
@@ -125,14 +107,21 @@
             }
         }
 
-        private void SetBinding()
+        private void UpdateViewModelLabelText(BindData data, object o)
         {
-            this.SetWinformBinding1();
-            this.SetWinformBinding2();
-            this.SetWinformBinding3();
-            this.SetWinformBinding4();
-
-            this.SetWpfBinding();
+            var index = (int)o;
+            switch (index)
+            {
+                case 0:
+                    data.Target.Value = ((DataWarehouse)data.Source.Source).ControlViewModel1.GetHashCode().ToStringWithoutException();
+                    break;
+                case 1:
+                    data.Target.Value = ((DataWarehouse)data.Source.Source).ControlViewModel2.GetHashCode().ToStringWithoutException();
+                    break;
+                default:
+                    data.Target.Value = "null";
+                    break;
+            }
         }
 
         private void SetWpfBinding()
@@ -254,8 +243,9 @@
 
         private void SetWinformBinding3()
         {
-            WinformBinding.SetCollectionBinding(this.treeView1, i => i.Nodes, DataWarehouse.Instance, o => o.ControlViewModel3.Groups)
-                          .SetTargetDataGenerator(this.SetTreeViewGroupBinding);
+            WinformBinding.SetCollectionBinding(this.treeView1, i => i.Nodes, DataWarehouse.Instance, o => o.ControlViewModel3.Groups, false)
+                          .SetTargetDataGenerator(this.SetTreeViewGroupBinding)
+                          .Activate();
 
             WinformBinding.SetPropertyBinding(this.treeView1, o => o.SelectedNode, DataWarehouse.Instance, i => i.ControlViewModel3.SelectedItem, false)
                           .SetMode(BindMode.OneWayToSource)
@@ -425,7 +415,7 @@
 
             public bool AddItem(int index, object item, object source, object sourceProperty)
             {
-                BindingEngine.SetNotifyBinding(source, null, item, o => (o as Person).Name).SetSourceChanged(
+                MainForm.WinformBinding.SetNotifyBinding(source, null, item, o => (o as Person).Name).SetSourceChanged(
                         (o, args) =>
                         ((RefreshListBox)args.Data.Target.Source).RefreshListBoxItem(args.Data.Source.Source));
 
@@ -460,11 +450,11 @@
             {
                 var tabItem = new TabPage();
                 var textbox = new System.Windows.Forms.TextBox();
-                BindingEngine.SetPropertyBinding(textbox, t => t.Text, item, o => (o as Person).Name)
+                MainForm.WinformBinding.SetPropertyBinding(textbox, t => t.Text, item, o => (o as Person).Name)
                              .SetMode(BindMode.TwoWay)
                              .AttachTargetEvent("TextChanged");
                 tabItem.Controls.Add(textbox);
-                BindingEngine.SetPropertyBinding(tabItem, t => t.Text, item, o => (o as Person).Name);
+                MainForm.WinformBinding.SetPropertyBinding(tabItem, t => t.Text, item, o => (o as Person).Name);
 
                 ((System.Windows.Forms.TabControl)source).TabPages.Add(tabItem);
 

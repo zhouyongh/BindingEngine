@@ -439,8 +439,8 @@ namespace Illusion.Utility
         /// </summary>
         protected override void DoConventions()
         {
-            this.AddConvention(BindMode.OneWay, Utility.BindTarget.Source, CollectionChangedEventName);
-            this.AddConvention(BindMode.OneWayToSource, Utility.BindTarget.Target, CollectionChangedEventName);
+            this.AddConvention(BindMode.OneWay, TargetMode.Source, CollectionChangedEventName);
+            this.AddConvention(BindMode.OneWayToSource, TargetMode.Target, CollectionChangedEventName);
         }
 
         /// <summary>
@@ -512,13 +512,13 @@ namespace Illusion.Utility
         private void AddItem(int index, object item, bool sourceToTarget = true)
         {
             ICollectionHandler handler = sourceToTarget ? this.TargetHandler : this.SourceHandler;
-            BindSource bindSource = sourceToTarget ? this.BindTarget : this.BindSource;
-            var list = bindSource.Value as IList;
+            BindContext bindContext = sourceToTarget ? this.BindTarget : this.BindSource;
+            var list = bindContext.Value as IList;
 
             bool handled = false;
             if (handler != null)
             {
-                handled = handler.AddItem(index, item, bindSource.Source, bindSource.Value);
+                handled = handler.AddItem(index, item, bindContext.Source, bindContext.Value);
             }
 
             if (!handled && list != null)
@@ -550,14 +550,14 @@ namespace Illusion.Utility
         /// </param>
         private void ClearItems(bool sourceToTarget = true)
         {
-            BindSource bindSource = sourceToTarget ? this.BindTarget : this.BindSource;
+            BindContext bindContext = sourceToTarget ? this.BindTarget : this.BindSource;
             ICollectionHandler handler = sourceToTarget ? this.TargetHandler : this.SourceHandler;
-            var list = bindSource.Value as IList;
+            var list = bindContext.Value as IList;
 
             bool handled = false;
             if (handler != null)
             {
-                handled = handler.Clear(bindSource.Source, bindSource.Value);
+                handled = handler.Clear(bindContext.Source, bindContext.Value);
             }
 
             if (!handled && list != null)
@@ -622,13 +622,13 @@ namespace Illusion.Utility
         private void RemoveItem(int index, object item, bool sourceToTarget = true)
         {
             bool handled = false;
-            BindSource bindSource = sourceToTarget ? this.BindTarget : this.BindSource;
+            BindContext bindContext = sourceToTarget ? this.BindTarget : this.BindSource;
             ICollectionHandler handler = sourceToTarget ? this.TargetHandler : this.SourceHandler;
-            var list = bindSource.Value as IList;
+            var list = bindContext.Value as IList;
 
             if (handler != null)
             {
-                handled = handler.RemoveItem(index, item, bindSource.Source, bindSource.Value);
+                handled = handler.RemoveItem(index, item, bindContext.Source, bindContext.Value);
             }
 
             if (!handled && list != null)

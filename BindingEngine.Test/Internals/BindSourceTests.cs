@@ -18,7 +18,7 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_NormalProperty()
         {
             var viewModel = new TestViewModel();
-            var bindSource = new BindSource(viewModel, "Name");
+            var bindSource = new BindContext(viewModel, "Name");
 
             Assert.AreEqual(viewModel, bindSource.Source);
             Assert.AreEqual("Name", bindSource.Property);
@@ -39,7 +39,7 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_RecurisonProperty()
         {
             var viewModel = new TestViewModel();
-            var bindSource = new BindSource(viewModel, "TestViewModel2.Name");
+            var bindSource = new BindContext(viewModel, "TestViewModel2.Name");
 
             Assert.AreEqual(viewModel, bindSource.OriginalSource);
             Assert.AreEqual(null, bindSource.Source);
@@ -60,7 +60,7 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_RecurisonProperty2()
         {
             var viewModel = new TestViewModel();
-            var bindSource = new BindSource(viewModel, "TestViewModel2.TestViewModel3.Name");
+            var bindSource = new BindContext(viewModel, "TestViewModel2.TestViewModel3.Name");
 
             Assert.AreEqual(null, bindSource.Source);
             Assert.AreEqual(null, bindSource.Value);
@@ -87,7 +87,7 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_IndexPropertyInt()
         {
             var viewModel = new TestViewModel();
-            var bindSource = new BindSource(viewModel, "TestViewModel2.TestViewModel3.IntValues[1]");
+            var bindSource = new BindContext(viewModel, "TestViewModel2.TestViewModel3.IntValues[1]");
 
             var viewModel2 = new TestViewModel2();
             viewModel.TestViewModel2 = viewModel2;
@@ -121,7 +121,7 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_IndexPropertyInt2()
         {
             var viewModel = new TestViewModel();
-            var bindSource = new BindSource(viewModel, "TestViewModel2.TestViewModel3.TestViewModels[1].Name");
+            var bindSource = new BindContext(viewModel, "TestViewModel2.TestViewModel3.TestViewModels[1].Name");
 
             var viewModel2 = new TestViewModel2();
             viewModel.TestViewModel2 = viewModel2;
@@ -159,7 +159,7 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_IndexPropertyDictionary()
         {
             var viewModel = new TestViewModel();
-            var bindSource = new BindSource(viewModel, "TestViewModel2.StringValues[yohan]");
+            var bindSource = new BindContext(viewModel, "TestViewModel2.StringValues[yohan]");
 
             Assert.IsNull(bindSource.Source);
             Assert.IsNull(bindSource.Value);
@@ -186,13 +186,13 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_NotifyValueChanged()
         {
             var viewModel = new TestViewModel();
-            var bindSource = new BindSource(viewModel, "Name");
+            var bindSource = new BindContext(viewModel, "Name");
 
             int change = 0;
 
             bindSource.SourceChanged += (sender, args) => { change++; };
 
-            bindSource.NotifyValueChanged();
+            bindSource.Update(true);
 
             Assert.AreEqual(1, change);
         }
@@ -201,7 +201,7 @@ namespace BindingEngine.Test.Internals
         public void Test_BindSource_NullProperty()
         {
             var viewModel = new TestViewModel();
-            var weakBindSource = new BindSource(viewModel, null);
+            var weakBindSource = new BindContext(viewModel, null);
 
             Assert.AreEqual(viewModel, weakBindSource.Source);
             Assert.AreEqual(null, weakBindSource.PropertyType);

@@ -31,17 +31,38 @@ namespace Illusion.Utility
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
 
     /// <summary>
-    ///     Concrete <see cref="IDynamicManager" /> that use <see cref="System.Reflection" /> to create and access object.
+    ///     A concrete <see cref="DynamicManagerBase"/> used to dynamically create and access objects, 
+    /// It uses <see cref="System.Reflection" /> to generate the access methods.
     /// </summary>
     /// <remarks>
-    ///     It hold the <see cref="System.Reflection.MethodInfo" /> and <see cref="System.Reflection.PropertyInfo" /> in the
-    ///     cache,
-    ///     use ClearCaches method to clear it.
+    ///     reference from Manuel Abadia:
+    ///     http://www.manuelabadia.com/blog/PermaLink,guid,dc72b235-1381-4c91-8706-e36216f49b94.aspx
     /// </remarks>
+    /// <example>
+    ///     public class TestObject
+    ///     {
+    ///         public string Name { get; set; }
+    ///         public void UpdateName(string name)
+    ///         {
+    ///             Name = name;
+    ///         }
+    ///     }
+    ///     1.Access Property
+    ///     TestObject testObj = new TestObject();
+    ///     testObj.Name = "1"; &lt;-- equals to:  --&gt; DynamicEngine.SetProperty(testObj, "Name", "1");
+    ///     2.CreateInstance
+    ///     TestObject testObj = new TestObject();   &lt;-- equals to:  --&gt; TestObject testObj =
+    ///     DynamicEngine.CreateInstance&lt;TestObject&gt;();
+    ///     3.Invoke Method
+    ///     TestObject testObj = new TestObject();
+    ///     testObj.UpdateName("new"); &lt;-- equals to:  --&gt; DynamicEngine.InvokeMethod(testObj, "UpdateName", "new");
+    /// </example>
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
     public class ReflectManager : DynamicManagerBase
     {
         #region Fields

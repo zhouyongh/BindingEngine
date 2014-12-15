@@ -115,9 +115,9 @@ namespace Illusion.Utility
             this.TargetEvent = new WeakEvent(this);
             this.SourceEvent = new WeakEvent(this);
 
-            this.BindTarget = new BindSource(target, targetProperty);
+            this.BindTarget = new BindContext(target, targetProperty);
             this.BindTarget.SourceChanged += this.OnBindTargetChanged;
-            this.BindSource = new BindSource(source, sourceProperty);
+            this.BindSource = new BindContext(source, sourceProperty);
             this.BindSource.SourceChanged += this.OnBindSourceChanged;
         }
 
@@ -154,16 +154,16 @@ namespace Illusion.Utility
         #region Properties
 
         /// <summary>
-        ///     Gets the bind target.
+        ///     Gets the <see cref="BindContext"/> of the target.
         /// </summary>
-        /// <value>The bind target.</value>
-        internal BindSource BindTarget { get; private set; }
+        /// <value>The target bind context.</value>
+        internal BindContext BindTarget { get; private set; }
 
         /// <summary>
-        ///     Gets the bind source.
+        ///     Gets the <see cref="BindContext"/> of the source.
         /// </summary>
-        /// <value>The bind source.</value>
-        internal BindSource BindSource { get; private set; }
+        /// <value>The source bind context.</value>
+        internal BindContext BindSource { get; private set; }
 
         /// <summary>
         ///     Gets or sets the target event.
@@ -213,8 +213,8 @@ namespace Illusion.Utility
         /// </returns>
         public WeakBinding AttachTargetEvent(object target, string eventName, WeakEventFilterHandler filter = null)
         {
-            BindSource bindSource = this.GetBindSource(target, null);
-            return this.AttachTargetEvent(bindSource, eventName, filter);
+            BindContext bindContext = this.GetBindContext(target, null);
+            return this.AttachTargetEvent(bindContext, eventName, filter);
         }
 
         /// <summary>
@@ -241,8 +241,8 @@ namespace Illusion.Utility
             string eventName,
             WeakEventFilterHandler filter = null)
         {
-            BindSource bindSource = this.GetBindSource(target, property);
-            return this.AttachTargetEvent(bindSource, eventName, filter);
+            BindContext bindContext = this.GetBindContext(target, property);
+            return this.AttachTargetEvent(bindContext, eventName, filter);
         }
 
         /// <summary>
@@ -300,8 +300,8 @@ namespace Illusion.Utility
         /// </returns>
         public WeakBinding AttachSourceEvent(object target, string eventName, WeakEventFilterHandler filter = null)
         {
-            BindSource bindSource = this.GetBindSource(target, null);
-            return this.AttachSourceEvent(bindSource, eventName, filter);
+            BindContext bindContext = this.GetBindContext(target, null);
+            return this.AttachSourceEvent(bindContext, eventName, filter);
         }
 
         /// <summary>
@@ -328,8 +328,8 @@ namespace Illusion.Utility
             string eventName,
             WeakEventFilterHandler filter = null)
         {
-            BindSource bindSource = this.GetBindSource(target, property);
-            return this.AttachSourceEvent(bindSource, eventName, filter);
+            BindContext bindContext = this.GetBindContext(target, property);
+            return this.AttachSourceEvent(bindContext, eventName, filter);
         }
 
         /// <summary>
@@ -454,8 +454,8 @@ namespace Illusion.Utility
         {
             if (this.CheckValidation())
             {
-                this.BindTarget.NotifyValueChanged();
-                this.BindSource.NotifyValueChanged();
+                this.BindTarget.Update(true);
+                this.BindSource.Update(true);
             }
         }
 
@@ -641,9 +641,9 @@ namespace Illusion.Utility
             this.TargetProperty = targetProperty;
             this.SourceProperty = sourceProperty;
 
-            this.BindTarget = new BindSource(this.Target, targetProperty);
+            this.BindTarget = new BindContext(this.Target, targetProperty);
             this.BindTarget.SourceChanged += this.OnBindTargetChanged;
-            this.BindSource = new BindSource(source, sourceProperty);
+            this.BindSource = new BindContext(source, sourceProperty);
             this.BindSource.SourceChanged += this.OnBindSourceChanged;
 
             this.Initialize<WeakBinding>();
@@ -668,7 +668,7 @@ namespace Illusion.Utility
         /// <returns>
         ///     The <see cref="WeakBinding"/>.
         /// </returns>
-        internal WeakBinding AttachTargetEvent(BindSource data, string eventName, WeakEventFilterHandler filter = null)
+        internal WeakBinding AttachTargetEvent(BindContext data, string eventName, WeakEventFilterHandler filter = null)
         {
             this.TargetEvent.AttachEvent(data, eventName, TargetEventHandlerName, filter);
             return this;
@@ -689,14 +689,14 @@ namespace Illusion.Utility
         /// <returns>
         ///     The <see cref="WeakBinding"/>.
         /// </returns>
-        internal WeakBinding AttachSourceEvent(BindSource data, string eventName, WeakEventFilterHandler filter = null)
+        internal WeakBinding AttachSourceEvent(BindContext data, string eventName, WeakEventFilterHandler filter = null)
         {
             this.SourceEvent.AttachEvent(data, eventName, SourceEventHandlerName, filter);
             return this;
         }
 
         /// <summary>
-        ///     Gets the bind source.
+        ///     Gets the <see cref="BindContext"/>.
         /// </summary>
         /// <param name="target">
         ///     The target.
@@ -705,11 +705,11 @@ namespace Illusion.Utility
         ///     The property.
         /// </param>
         /// <returns>
-        ///     The <see cref="BindSource"/>.
+        ///     The <see cref="BindContext"/>.
         /// </returns>
-        internal BindSource GetBindSource(object target, string property)
+        internal BindContext GetBindContext(object target, string property)
         {
-            BindSource data;
+            BindContext data;
             if (target == this.BindTarget.OriginalSource && property == this.BindTarget.Property)
             {
                 data = this.BindTarget;
@@ -720,7 +720,7 @@ namespace Illusion.Utility
             }
             else
             {
-                data = new BindSource(target, property);
+                data = new BindContext(target, property);
             }
 
             return data;
@@ -729,8 +729,8 @@ namespace Illusion.Utility
         /// <summary>
         ///     Adds the convention.
         /// </summary>
-        /// <param name="bindTarget">
-        ///     The bind target.
+        /// <param name="targetMode">
+        ///     The target mode.
         /// </param>
         /// <param name="eventName">
         ///     Name of the event.
@@ -738,11 +738,11 @@ namespace Illusion.Utility
         /// <param name="eventFilter">
         ///     The event filter.
         /// </param>
-        protected void AddConvention(BindTarget bindTarget, string eventName, WeakEventFilterHandler eventFilter = null)
+        protected void AddConvention(TargetMode targetMode, string eventName, WeakEventFilterHandler eventFilter = null)
         {
-            switch (bindTarget)
+            switch (targetMode)
             {
-                case Utility.BindTarget.Target:
+                case TargetMode.Target:
                     if (!this.TargetEvent.IsAttached)
                     {
                         this.AttachTargetEvent(eventName, eventFilter);
@@ -750,7 +750,7 @@ namespace Illusion.Utility
 
                     break;
 
-                case Utility.BindTarget.Source:
+                case TargetMode.Source:
                     if (!this.SourceEvent.IsAttached)
                     {
                         this.AttachSourceEvent(eventName, eventFilter);

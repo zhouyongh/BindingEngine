@@ -325,7 +325,7 @@ namespace Illusion.Utility
         /// <param name="bindMode">
         ///     The bind mode.
         /// </param>
-        /// <param name="bindTarget">
+        /// <param name="targetMode">
         ///     The bind target.
         /// </param>
         /// <param name="eventName">
@@ -336,13 +336,13 @@ namespace Illusion.Utility
         /// </param>
         protected void AddConvention(
             BindMode bindMode,
-            BindTarget bindTarget,
+            TargetMode targetMode,
             string eventName,
             WeakEventFilterHandler eventFilter = null)
         {
             if ((bindMode & this.bindMode) > 0)
             {
-                this.AddConvention(bindTarget, eventName, eventFilter);
+                this.AddConvention(targetMode, eventName, eventFilter);
             }
         }
 
@@ -354,13 +354,13 @@ namespace Illusion.Utility
         {
             this.AddConvention(
                 BindMode.OneWay,
-                Utility.BindTarget.Source,
+                Utility.TargetMode.Source,
                 PropertyChangedEventName,
                 this.SourcePropertyChangedEventFilter);
 
             this.AddConvention(
                 BindMode.OneWayToSource,
-                Utility.BindTarget.Target,
+                Utility.TargetMode.Target,
                 PropertyChangedEventName,
                 this.TargetPropertyChangedEventFilter);
         }

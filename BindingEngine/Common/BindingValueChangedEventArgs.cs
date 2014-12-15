@@ -62,7 +62,7 @@ namespace Illusion.Utility
         #region Public Properties
 
         /// <summary>
-        ///     Gets or sets the data.
+        ///     Gets or sets the <see cref="BindData"/>.
         /// </summary>
         public BindData Data { get; set; }
 

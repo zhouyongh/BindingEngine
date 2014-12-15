@@ -24,7 +24,7 @@
 //   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // </copyright>
 // <summary>
-//   The binding manager.
+//   Manage all the binding operations, and holds all the binding in field. 
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 namespace Illusion.Utility
@@ -182,6 +182,76 @@ namespace Illusion.Utility
         {
             WeakTarget weakTarget = this.GetWeakTarget(target);
             weakTarget.ClearBinding(targetProperty, source, sourceProperty);
+        }
+
+        /// <summary>
+        ///     Gets the binding.
+        /// </summary>
+        /// <typeparam name="TTarget">
+        ///     The type of the target.
+        /// </typeparam>
+        /// <typeparam name="TSource">
+        ///     The type of the source.
+        /// </typeparam>
+        /// <typeparam name="T">
+        ///     The concrete <see cref="WeakBinding"/> to return.
+        /// </typeparam>
+        /// <param name="target">
+        ///     The target.
+        /// </param>
+        /// <param name="targetExpression">
+        ///     The target expression.
+        /// </param>
+        /// <param name="source">
+        ///     The source.
+        /// </param>
+        /// <param name="sourceExpression">
+        ///     The source expression.
+        /// </param>
+        /// <param name="activate">
+        ///     if set to <c>true</c> activate.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="T"/>.
+        /// </returns>
+        public T GetBinding<TTarget, TSource, T>(
+            TTarget target,
+            Expression<Func<TTarget, object>> targetExpression,
+            TSource source,
+            Expression<Func<TSource, object>> sourceExpression,
+            bool activate = true) where T : WeakBinding
+        {
+            return this.GetBinding<T>(target, targetExpression.GetName(), source, sourceExpression.GetName(), activate);
+        }
+
+        /// <summary>
+        ///     Gets the binding.
+        /// </summary>
+        /// <typeparam name="T">
+        ///     The concrete <see cref="WeakBinding"/> to return.
+        /// </typeparam>
+        /// <param name="target">
+        ///     The target.
+        /// </param>
+        /// <param name="targetProperty">
+        ///     The target property.
+        /// </param>
+        /// <param name="source">
+        ///     The source.
+        /// </param>
+        /// <param name="sourceProperty">
+        ///     The source property.
+        /// </param>
+        /// <param name="activate">
+        ///     if set to <c>true</c> activate.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="T"/>.
+        /// </returns>
+        public T GetBinding<T>(object target, string targetProperty, object source, string sourceProperty, bool activate = true) where T : WeakBinding
+        {
+            WeakTarget weakTarget = this.GetWeakTarget(target);
+            return weakTarget.GetBinding<T>(targetProperty, source, sourceProperty);
         }
 
         /// <summary>

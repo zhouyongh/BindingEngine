@@ -130,7 +130,7 @@ namespace Illusion.Utility
         /// <summary>
         ///     The parameter.
         /// </summary>
-        private BindSource parameter;
+        private BindContext parameter;
 
         #endregion
 
@@ -300,7 +300,7 @@ namespace Illusion.Utility
         /// </returns>
         public WeakCommandBinding SetParameter(object source, string property)
         {
-            this.parameter = source == null ? null : new BindSource(source, property);
+            this.parameter = source == null ? null : new BindContext(source, property);
 
             this.RaiseCanExecuteChanged();
             return this;
@@ -359,7 +359,7 @@ namespace Illusion.Utility
                 throw new ArgumentNullException("source");
             }
 
-            var bindSource = new BindSource(source, property);
+            var bindSource = new BindContext(source, property);
 
             var entry = new WeakEntry(null, bindSource.Source, property);
             if (this.watchEvents.ContainsKey(entry))
@@ -427,9 +427,9 @@ namespace Illusion.Utility
                 throw new ArgumentNullException("source");
             }
 
-            var bindSource = new BindSource(source, property);
+            var bindContext = new BindContext(source, property);
 
-            var entry = new WeakEntry(null, bindSource.Source, property);
+            var entry = new WeakEntry(null, bindContext.Source, property);
             WeakEvent watchEvent;
             if (this.watchEvents.ContainsKey(entry))
             {
@@ -441,13 +441,13 @@ namespace Illusion.Utility
                 this.watchEvents.Add(entry, watchEvent);
             }
 
-            string properyName = property.Contains(".") ? property.Right(".") : property;
+            string propertyName = property.Contains(".") ? property.Right(".") : property;
 
             watchEvent.AttachEvent(
-                bindSource,
+                bindContext,
                 WeakPropertyBinding.PropertyChangedEventName,
                 WatchEventCallbackMethod,
-                (o, args) => string.Equals(((PropertyChangedEventArgs)args).PropertyName, properyName));
+                (o, args) => string.Equals(((PropertyChangedEventArgs)args).PropertyName, propertyName));
 
             this.RaiseCanExecuteChanged();
 

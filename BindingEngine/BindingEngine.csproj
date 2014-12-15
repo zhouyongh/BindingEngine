@@ -48,7 +48,7 @@
     <Compile Include="Common\BindData.cs" />
     <Compile Include="Common\BindingValueChangedEventArgs.cs" />
     <Compile Include="Common\BindingValueChangedHandler.cs" />
-    <Compile Include="Common\BindTarget.cs" />
+    <Compile Include="Common\TargetMode.cs" />
     <Compile Include="Common\BindMode.cs" />
     <Compile Include="Common\CanExecuteChangedEventArgs.cs" />
     <Compile Include="Common\CommandCanExecuteChangedHandler.cs" />
@@ -58,7 +58,7 @@
     <Compile Include="Utilities\DynamicEngine\DynamicEngine.cs" />
     <Compile Include="Bindings\WeakNotifyBinding.cs" />
     <Compile Include="Internals\WeakEvent.cs" />
-    <Compile Include="Internals\BindSource.cs" />
+    <Compile Include="Internals\BindContext.cs" />
     <Compile Include="Bindings\WeakCommandBinding.cs" />
     <Compile Include="Bindings\WeakCollectionBinding.cs" />
     <Compile Include="Bindings\WeakPropertyBinding.cs" />

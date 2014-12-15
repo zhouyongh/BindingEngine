@@ -85,7 +85,7 @@ namespace BindingEngine.Test.Internals
             var reference2 = new WeakReference(v2);
 
             int changeCount = 0;
-            var bindSource = new BindSource(v, "TestViewModel2.Name");
+            var bindSource = new BindContext(v, "TestViewModel2.Name");
             bindSource.SourceMode = SourceMode.Property;
             bindSource.SourceChanged += (sender, args) =>
                 {
@@ -95,8 +95,7 @@ namespace BindingEngine.Test.Internals
                 };
 
             v.TestViewModel2 = v2;
-
-            Assert.AreEqual(1, changeCount);
+            Assert.AreEqual(0, changeCount);
 
             v2 = null;
             v.TestViewModel2 = null;

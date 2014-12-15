@@ -43,7 +43,7 @@ namespace Illusion.Utility
         /// <summary>
         ///     Initializes a new instance of the <see cref="MethodInvoker"/> class.
         /// </summary>
-        /// <param name="source">
+        /// <param name="context">
         ///     The source.
         /// </param>
         /// <param name="method">
@@ -52,9 +52,9 @@ namespace Illusion.Utility
         /// <param name="parameters">
         ///     The parameters.
         /// </param>
-        public MethodInvoker(BindSource source, string method, IEnumerable<BindSource> parameters)
+        public MethodInvoker(BindContext context, string method, IEnumerable<BindContext> parameters)
         {
-            this.Source = source;
+            this.Context = context;
             this.Method = method;
             this.Parameters = parameters;
         }
@@ -73,13 +73,13 @@ namespace Illusion.Utility
         ///     Gets or sets the parameters.
         /// </summary>
         /// <value>The parameters.</value>
-        public IEnumerable<BindSource> Parameters { get; set; }
+        public IEnumerable<BindContext> Parameters { get; set; }
 
         /// <summary>
         ///     Gets or sets the source.
         /// </summary>
         /// <value>The source.</value>
-        public BindSource Source { get; set; }
+        public BindContext Context { get; set; }
 
         #endregion
 
@@ -92,7 +92,7 @@ namespace Illusion.Utility
         /// <exception cref="MissingMemberException">The attach method does not return boolean value.</exception>
         public bool CanInvoke()
         {
-            object source = this.Source.Value;
+            object source = this.Context.Value;
             if (source != null)
             {
                 object[] paras = this.Parameters != null ? this.Parameters.Select(item => item.Value).ToArray() : null;
@@ -118,7 +118,7 @@ namespace Illusion.Utility
         /// </summary>
         public void Invoke()
         {
-            object source = this.Source.Value;
+            object source = this.Context.Value;
             if (source != null)
             {
                 object[] paras = this.Parameters != null ? this.Parameters.Select(item => item.Value).ToArray() : null;

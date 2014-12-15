@@ -30,9 +30,9 @@
 namespace Illusion.Utility
 {
     /// <summary>
-    ///     The bind target.
+    ///     Defines the mode of target.
     /// </summary>
-    public enum BindTarget
+    public enum TargetMode
     {
         /// <summary>
         ///     The target.

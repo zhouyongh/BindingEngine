@@ -461,24 +461,24 @@ namespace Illusion.Utility
     }
 
     /// <summary>
-    ///     The bind source extension.
+    ///     The bind context extension.
     /// </summary>
-    public static class BindSourceExtension
+    public static class BindContextExtension
     {
         #region Public Methods and Operators
 
         /// <summary>
         ///     Tries the get value.
         /// </summary>
-        /// <param name="source">
+        /// <param name="context">
         ///     The source.
         /// </param>
         /// <returns>
         ///     The <see cref="Object"/>.
         /// </returns>
-        public static object TryGetValue(this BindSource source)
+        public static object TryGetValue(this BindContext context)
         {
-            return source == null ? null : source.Value;
+            return context == null ? null : context.Value;
         }
 
         #endregion

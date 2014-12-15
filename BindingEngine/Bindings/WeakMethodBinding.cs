@@ -99,7 +99,7 @@ namespace Illusion.Utility
         /// <returns>
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
-        public WeakMethodBinding AttachTargetCanInvokeMethod(string canInvokeMethod, IEnumerable<BindSource> parameters)
+        public WeakMethodBinding AttachTargetCanInvokeMethod(string canInvokeMethod, IEnumerable<BindContext> parameters)
         {
             return this.AttachTargetCanInvokeMethod(this.BindTarget, canInvokeMethod, parameters);
         }
@@ -107,7 +107,7 @@ namespace Illusion.Utility
         /// <summary>
         ///     Attaches the target can invoke method.
         /// </summary>
-        /// <param name="source">
+        /// <param name="context">
         ///     The source.
         /// </param>
         /// <param name="canInvokeMethod">
@@ -120,11 +120,11 @@ namespace Illusion.Utility
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
         public WeakMethodBinding AttachTargetCanInvokeMethod(
-            BindSource source,
+            BindContext context,
             string canInvokeMethod,
-            IEnumerable<BindSource> parameters)
+            IEnumerable<BindContext> parameters)
         {
-            this.targetCanInvoker = new MethodInvoker(source, canInvokeMethod, parameters);
+            this.targetCanInvoker = new MethodInvoker(context, canInvokeMethod, parameters);
             return this;
         }
 
@@ -140,7 +140,7 @@ namespace Illusion.Utility
         /// <returns>
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
-        public WeakMethodBinding AttachTargetMethod(string targetMethod, IEnumerable<BindSource> parameters)
+        public WeakMethodBinding AttachTargetMethod(string targetMethod, IEnumerable<BindContext> parameters)
         {
             return this.AttachTargetMethod(this.BindTarget, targetMethod, parameters);
         }
@@ -148,7 +148,7 @@ namespace Illusion.Utility
         /// <summary>
         ///     Attaches the target method.
         /// </summary>
-        /// <param name="source">
+        /// <param name="context">
         ///     The source.
         /// </param>
         /// <param name="targetMethod">
@@ -161,11 +161,11 @@ namespace Illusion.Utility
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
         public WeakMethodBinding AttachTargetMethod(
-            BindSource source,
+            BindContext context,
             string targetMethod,
-            IEnumerable<BindSource> parameters)
+            IEnumerable<BindContext> parameters)
         {
-            this.targetInvoker = new MethodInvoker(source, targetMethod, parameters);
+            this.targetInvoker = new MethodInvoker(context, targetMethod, parameters);
             return this;
         }
 
@@ -181,7 +181,7 @@ namespace Illusion.Utility
         /// <returns>
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
-        public WeakMethodBinding AttachSourceCanInvokeMethod(string canInvokeMethod, IEnumerable<BindSource> parameters)
+        public WeakMethodBinding AttachSourceCanInvokeMethod(string canInvokeMethod, IEnumerable<BindContext> parameters)
         {
             return this.AttachSourceCanInvokeMethod(this.BindSource, canInvokeMethod, parameters);
         }
@@ -189,7 +189,7 @@ namespace Illusion.Utility
         /// <summary>
         ///     Attaches the source can invoke method.
         /// </summary>
-        /// <param name="source">
+        /// <param name="context">
         ///     The source.
         /// </param>
         /// <param name="canInvokeMethod">
@@ -202,11 +202,11 @@ namespace Illusion.Utility
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
         public WeakMethodBinding AttachSourceCanInvokeMethod(
-            BindSource source, 
+            BindContext context, 
             string canInvokeMethod, 
-            IEnumerable<BindSource> parameters)
+            IEnumerable<BindContext> parameters)
         {
-            this.sourceCanInvoker = new MethodInvoker(source, canInvokeMethod, parameters);
+            this.sourceCanInvoker = new MethodInvoker(context, canInvokeMethod, parameters);
             return this;
         }
 
@@ -222,7 +222,7 @@ namespace Illusion.Utility
         /// <returns>
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
-        public WeakMethodBinding AttachSourceMethod(string sourceMethod, IEnumerable<BindSource> parameters)
+        public WeakMethodBinding AttachSourceMethod(string sourceMethod, IEnumerable<BindContext> parameters)
         {
             return this.AttachSourceMethod(this.BindSource, sourceMethod, parameters);
         }
@@ -230,7 +230,7 @@ namespace Illusion.Utility
         /// <summary>
         ///     Attaches the source method.
         /// </summary>
-        /// <param name="source">
+        /// <param name="context">
         ///     The source.
         /// </param>
         /// <param name="sourceMethod">
@@ -243,11 +243,11 @@ namespace Illusion.Utility
         ///     The <see cref="WeakMethodBinding"/>.
         /// </returns>
         public WeakMethodBinding AttachSourceMethod(
-            BindSource source, 
+            BindContext context, 
             string sourceMethod, 
-            IEnumerable<BindSource> parameters)
+            IEnumerable<BindContext> parameters)
         {
-            this.sourceInvoker = new MethodInvoker(source, sourceMethod, parameters);
+            this.sourceInvoker = new MethodInvoker(context, sourceMethod, parameters);
             return this;
         }
 

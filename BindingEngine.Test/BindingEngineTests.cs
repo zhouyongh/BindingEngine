@@ -27,13 +27,13 @@ namespace Illusion.Utility.Tests
 
             viewModel.Name = Name1;
 
-            Assert.AreEqual(view.Text1, Name1);
+            Assert.AreEqual(Name1, view.Text1);
 
             view.Text1 = Name2;
-            Assert.AreNotEqual(viewModel.Name, Name2);
+            Assert.AreNotEqual(Name2, viewModel.Name);
 
             view.RaiseTestViewEvent();
-            Assert.AreEqual(viewModel.Name, Name2);
+            Assert.AreEqual(Name2, viewModel.Name);
         }
 
         [TestMethod]
