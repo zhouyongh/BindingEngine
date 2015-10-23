@@ -30,10 +30,10 @@ AttactSourceEvent indicates the binding is triggered when TextChanged event occu
 This binding means the Label-->viewModelLabel.Text is bind to the MainViewModel GetHashCode method.</br>  
 
 Use the BindingEngine, you can switch the view from WPF to Winform without changing the codes of ViewModel.     
-The BindingEngine can be extend to support more functions, like conversion to auto apply event trigger for different type.     
-I don't like the heavy codes to do the simple thing, there are just two files : BindingEngine and EmitEngine, you can easily integrate the codes in your solution.    
+The BindingEngine can be extend to support more functions, like conversion to auto apply event trigger for different type.
 
-Have fun with it and appreciate for suggestion. ^_^ </br>
+Have fun with it. </br>
+
+License: MIT
 
 <strong>yohan zhou</strong>   
-mailto:yohan.zhou@gmail.com
